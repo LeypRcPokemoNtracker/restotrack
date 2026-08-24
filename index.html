@@ -206,6 +206,15 @@
               <option value="favorite">Favorites only</option>
             </select>
           </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">📍 Too far</span>
+            <select id="pickTooFar" class="input mt-2">
+              <option value="exclude">Exclude too far</option>
+              <option value="include">Include too far</option>
+              <option value="only">Too far only</option>
+            </select>
+          </label>
         </div>
 
         <label class="flex items-center gap-3 cursor-pointer mb-5">
@@ -854,8 +863,11 @@
       if (payment !== "all" && r.card_payment !== paymentValues[payment]) return false;
       if (favorite === "favorite" && !r.is_favorite) return false;
 
-      // Restaurants marked "Too far to go" are never recommended by default.
-      if (r.too_far) return false;
+      // Too-far restaurants are excluded by default, but the picker can
+      // explicitly include them or show only too-far restaurants.
+      const tooFarMode = $("pickTooFar").value;
+      if (tooFarMode === "exclude" && r.too_far) return false;
+      if (tooFarMode === "only" && !r.too_far) return false;
 
       if (excludeRecent && state.lastPickedId != null && String(r.id) === String(state.lastPickedId)) return false;
 
