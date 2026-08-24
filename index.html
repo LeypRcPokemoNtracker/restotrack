@@ -149,12 +149,12 @@
               <input id="location" class="input mt-2" placeholder="City / address" />
             </label>
             <label class="block">
-              <span class="text-sm font-semibold">Opening time</span>
-              <input id="openTime" type="time" class="input mt-2" />
+              <span class="text-sm font-semibold">Google Maps link</span>
+              <input id="googleMapsUrl" class="input mt-2" type="url" placeholder="Paste Google Maps link" />
             </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Closing time</span>
-              <input id="closeTime" type="time" class="input mt-2" />
+            <label class="block sm:col-span-2">
+              <span class="text-sm font-semibold">Hours</span>
+              <input id="hours" type="text" class="input mt-2" placeholder="e.g. 10:00 AM – 10:00 PM, 24 Hours, Closed Mondays" />
             </label>
             <label class="block">
               <span class="text-sm font-semibold">Card payment</span>
@@ -300,8 +300,8 @@
     $("editId").value = item?.id || "";
     $("name").value = item?.name || "";
     $("location").value = item?.location || "";
-    $("openTime").value = item?.opening_time || "";
-    $("closeTime").value = item?.closing_time || "";
+    $("googleMapsUrl").value = item?.google_maps_url || "";
+    $("hours").value = item?.hours || "";
     $("cardPayment").value = item?.card_payment || "yes";
     $("pricey").value = item?.pricey || "no";
     $("avgPrice").value = item?.avg_price || "";
@@ -352,7 +352,7 @@
     $("list").innerHTML = rows.map(r => {
       const together = combined(r);
       const cardText = r.card_payment === "yes" ? "💳 Card accepted" : r.card_payment === "no" ? "💵 Cash only" : "💳 Payment unknown";
-      const hours = r.opening_time && r.closing_time ? `🕐 ${r.opening_time} – ${r.closing_time}` : "";
+      const hours = r.hours ? `🕐 ${r.hours}` : "";
       return `
         <article class="glass rounded-3xl p-5">
           <div class="flex justify-between gap-3">
@@ -362,6 +362,7 @@
                 ${r.is_favorite ? '<span class="tag rounded-full px-2 py-1 text-xs">♥ Favorite</span>' : ''}
               </div>
               ${r.location ? `<p class="text-sm text-purple-200/55 mt-1">📍 ${esc(r.location)}</p>` : ''}
+              ${r.google_maps_url ? `<a href="${esc(r.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-purple-300 hover:text-white">🗺️ Open in Google Maps ↗</a>` : ''}
             </div>
             <button class="btn btn-secondary px-3" onclick="editRestaurant('${esc(r.id)}')">Edit</button>
           </div>
@@ -560,8 +561,8 @@
     const payload = {
       name: $("name").value.trim(),
       location: $("location").value.trim() || null,
-      opening_time: $("openTime").value || null,
-      closing_time: $("closeTime").value || null,
+      google_maps_url: $("googleMapsUrl").value.trim() || null,
+      hours: $("hours").value.trim() || null,
       card_payment: $("cardPayment").value,
       pricey: $("pricey").value,
       avg_price: $("avgPrice").value.trim() || null,
@@ -579,6 +580,17 @@
       message.textContent = "Restaurant name is required.";
       message.classList.remove("hidden");
       return;
+    }
+
+    if (payload.google_maps_url) {
+      try {
+        const parsed = new URL(payload.google_maps_url);
+        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
+      } catch {
+        message.textContent = "Please enter a valid Google Maps link.";
+        message.classList.remove("hidden");
+        return;
+      }
     }
 
     try {
