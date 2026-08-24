@@ -120,7 +120,10 @@
           </div>
         </div>
       </div>
-      <button id="addBtn" class="btn btn-primary">＋ Add Restaurant</button>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button id="pickBtn" class="btn btn-secondary">🎲 Where Should We Eat?</button>
+        <button id="addBtn" class="btn btn-primary">＋ Add Restaurant</button>
+      </div>
     </header>
 
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -155,6 +158,73 @@
     </section>
 
     <section id="list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></section>
+
+    <div id="pickerModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
+      <div class="max-w-lg mx-auto my-10 glass rounded-3xl p-6 sm:p-7">
+        <div class="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <h2 class="text-xl font-black">🎲 Where Should We Eat?</h2>
+            <p class="text-sm text-purple-200/55 mt-1">Let Rate them up pick a restaurant for you.</p>
+          </div>
+          <button id="closePicker" class="btn btn-secondary">✕</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <label class="block">
+            <span class="text-sm font-semibold">Minimum rating</span>
+            <select id="pickMinRating" class="input mt-2">
+              <option value="0">Any rating</option>
+              <option value="6">6+</option>
+              <option value="7">7+</option>
+              <option value="8">8+</option>
+              <option value="8.5">8.5+</option>
+              <option value="9">9+</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">Price</span>
+            <select id="pickPrice" class="input mt-2">
+              <option value="all">Any</option>
+              <option value="not_pricey">Not pricey</option>
+              <option value="pricey">Pricey only</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">Payment</span>
+            <select id="pickPayment" class="input mt-2">
+              <option value="all">Any</option>
+              <option value="card">Card accepted</option>
+              <option value="cash_only">Cash only</option>
+              <option value="qrph">QRPH</option>
+              <option value="sometimes">Sometimes</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">Favorites</span>
+            <select id="pickFavorite" class="input mt-2">
+              <option value="all">All restaurants</option>
+              <option value="favorite">Favorites only</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="flex items-center gap-3 cursor-pointer mb-5">
+          <input id="pickExcludeRecent" type="checkbox" class="w-5 h-5 accent-violet-500" />
+          <span>
+            <span class="text-sm font-semibold">Avoid my most recent pick</span>
+            <span class="block text-xs text-purple-200/50">Don't suggest the same restaurant twice.</span>
+          </span>
+        </label>
+
+        <button id="pickRandomBtn" class="btn btn-primary w-full">🎲 Pick For Us</button>
+
+        <div id="pickResult" class="hidden mt-5 rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-950/70 to-purple-900/20 p-5"></div>
+        <div id="pickMessage" class="hidden text-sm text-purple-200/65 text-center mt-4"></div>
+      </div>
+    </div>
 
     <div id="modal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
       <div class="max-w-2xl mx-auto my-6 glass rounded-3xl p-5 sm:p-7">
@@ -285,7 +355,8 @@
   const state = {
     restaurants: [],
     myRating: null,
-    partnerRating: null
+    partnerRating: null,
+    lastPickedId: null
   };
 
   const $ = (id) => document.getElementById(id);
@@ -448,6 +519,104 @@
     $("statAvg").textContent = rated.length ? (rated.reduce((a,b)=>a+b,0)/rated.length).toFixed(1) : "—";
     const cardCount = state.restaurants.filter(r => r.card_payment === "yes").length;
     $("statCard").textContent = state.restaurants.length ? Math.round(cardCount/state.restaurants.length*100) + "%" : "0%";
+  }
+
+  function openPicker() {
+    $("pickerModal").classList.remove("hidden");
+    $("pickResult").classList.add("hidden");
+    $("pickMessage").classList.add("hidden");
+  }
+
+  function closePicker() {
+    $("pickerModal").classList.add("hidden");
+  }
+
+  function pickRestaurant() {
+    const minRating = Number($("pickMinRating").value);
+    const price = $("pickPrice").value;
+    const payment = $("pickPayment").value;
+    const favorite = $("pickFavorite").value;
+    const excludeRecent = $("pickExcludeRecent").checked;
+
+    const paymentValues = {
+      card: "yes",
+      cash_only: "cash_only",
+      qrph: "qrph",
+      sometimes: "sometimes"
+    };
+
+    const candidates = state.restaurants.filter(r => {
+      const my = Number(r.my_rating);
+      const other = Number(r.partner_rating);
+      const companion = String(r.companion_name || "").trim();
+
+      // Solo restaurant = user's rating.
+      // Restaurant with a named companion = combined rating when both ratings exist.
+      const rating = companion && Number.isFinite(my) && Number.isFinite(other)
+        ? (my + other) / 2
+        : my;
+
+      if (!Number.isFinite(rating) || rating < minRating) return false;
+      if (price === "not_pricey" && r.pricey !== "no") return false;
+      if (price === "pricey" && r.pricey !== "yes") return false;
+      if (payment !== "all" && r.card_payment !== paymentValues[payment]) return false;
+      if (favorite === "favorite" && !r.is_favorite) return false;
+      if (excludeRecent && state.lastPickedId != null && String(r.id) === String(state.lastPickedId)) return false;
+
+      return true;
+    });
+
+    const result = $("pickResult");
+    const message = $("pickMessage");
+
+    if (!candidates.length) {
+      result.classList.add("hidden");
+      message.textContent = "No restaurants match those filters. Try relaxing one of them.";
+      message.classList.remove("hidden");
+      return;
+    }
+
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    state.lastPickedId = chosen.id;
+
+    const my = Number(chosen.my_rating);
+    const other = Number(chosen.partner_rating);
+    const companion = String(chosen.companion_name || "").trim();
+    const hasCombined = companion && Number.isFinite(my) && Number.isFinite(other);
+    const rating = hasCombined
+      ? ((my + other) / 2).toFixed(1)
+      : (Number.isFinite(my) ? my.toFixed(1) : "—");
+
+    const paymentBadge =
+      chosen.card_payment === "yes" ? '<span class="info-badge info-card">💳 Card accepted</span>' :
+      chosen.card_payment === "cash_only" ? '<span class="info-badge info-cash">💵 Cash only</span>' :
+      chosen.card_payment === "qrph" ? '<span class="info-badge info-qrph">📱 QRPH</span>' :
+      chosen.card_payment === "sometimes" ? '<span class="info-badge info-sometimes">💳 Sometimes</span>' :
+      "";
+
+    result.innerHTML = `
+      <div class="text-xs uppercase tracking-widest text-purple-300/60 font-bold">Tonight's pick</div>
+      <div class="text-2xl sm:text-3xl font-black mt-2">${esc(chosen.name)}</div>
+      ${chosen.location ? `<div class="text-sm text-purple-200/60 mt-1">📍 ${esc(chosen.location)}</div>` : ""}
+      <div class="flex flex-wrap gap-2 mt-4">
+        <span class="info-badge info-price">⭐ ${rating}</span>
+        ${chosen.pricey === "yes"
+          ? '<span class="info-badge info-pricey">💸 Pricey</span>'
+          : '<span class="info-badge info-not-pricey">💰 Not pricey</span>'}
+        ${chosen.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(chosen.avg_price)}</span>` : ""}
+        ${paymentBadge}
+      </div>
+      ${chosen.hours ? `<div class="text-sm text-purple-200/60 mt-4">🕐 ${esc(chosen.hours)}</div>` : ""}
+      <div class="flex flex-col sm:flex-row gap-2 mt-5">
+        ${chosen.google_maps_url
+          ? `<a href="${esc(chosen.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary text-center">🗺️ Open in Google Maps</a>`
+          : ""}
+        <button type="button" class="btn btn-secondary" onclick="editRestaurant('${esc(chosen.id)}'); closePicker();">✎ View / Edit</button>
+      </div>
+    `;
+
+    message.classList.add("hidden");
+    result.classList.remove("hidden");
   }
 
   window.editRestaurant = (id) => {
@@ -660,6 +829,9 @@
 
   $("addBtn").addEventListener("click", () => openModal());
   $("emptyAdd").addEventListener("click", () => openModal());
+  $("pickBtn").addEventListener("click", openPicker);
+  $("closePicker").addEventListener("click", closePicker);
+  $("pickRandomBtn").addEventListener("click", pickRestaurant);
   $("closeModal").addEventListener("click", closeModal);
   $("cancelBtn").addEventListener("click", closeModal);
   $("companionName").addEventListener("input", () => {
