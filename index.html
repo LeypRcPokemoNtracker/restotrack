@@ -57,6 +57,33 @@
     .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
     .btn-secondary { background: #191222; border: 1px solid #382747; color: #ddd0f0; }
     .btn-secondary:hover { border-color: #6d4b8d; }
+    .edit-btn {
+      min-height: 38px;
+      height: 38px;
+      padding: 0 13px;
+      border-radius: 10px;
+      font-size: .85rem;
+      white-space: nowrap;
+    }
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 11px;
+      font-size: .78rem;
+      font-weight: 800;
+      border: 1px solid;
+      box-shadow: inset 0 0 18px rgba(255,255,255,.025);
+    }
+    .info-hours { color: #cbd5e1; border-color: #475569; background: rgba(51,65,85,.22); }
+    .info-card { color: #86efac; border-color: #22c55e; background: rgba(34,197,94,.10); }
+    .info-cash { color: #fca5a5; border-color: #ef4444; background: rgba(239,68,68,.10); }
+    .info-unknown { color: #c4b5fd; border-color: #8b5cf6; background: rgba(139,92,246,.10); }
+    .info-pricey { color: #fcd34d; border-color: #f59e0b; background: rgba(245,158,11,.10); }
+    .info-not-pricey { color: #a7f3d0; border-color: #10b981; background: rgba(16,185,129,.08); }
+    .info-price { color: #f0abfc; border-color: #d946ef; background: rgba(217,70,239,.09); }
     .rating-btn {
       min-width: 42px;
       min-height: 38px;
@@ -188,15 +215,12 @@
           </div>
 
           <div>
-            <label class="flex items-center gap-3 cursor-pointer mb-3">
-              <input id="partnerIncluded" type="checkbox" class="w-5 h-5 accent-violet-500" />
-              <span>
-                <span class="text-sm font-semibold">Partner rating</span>
-                <span class="block text-xs text-purple-200/50">Enable this when your partner also ate here.</span>
-              </span>
-            </label>
-            <div id="partnerRatingSection" class="hidden">
-              <div class="text-sm font-semibold mb-2">Partner's rating <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div>
+            <div class="text-sm font-semibold mb-2">Who I went with <span class="text-purple-200/50">(optional)</span></div>
+            <input id="companionName" type="text" class="input" placeholder="e.g. Maria, John, Family, Friends" />
+            <p class="text-xs text-purple-200/50 mt-2">Leave this blank if you ate alone. Add a name or group if someone joined you.</p>
+
+            <div id="companionRatingSection" class="hidden mt-4">
+              <div class="text-sm font-semibold mb-2"><span id="companionRatingTitle">Their rating</span> <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div>
               <div id="partnerRating" class="rating-grid grid grid-cols-10 gap-1.5"></div>
               <div id="partnerRatingLabel" class="text-sm text-purple-200/65">Not rated</div>
             </div>
@@ -308,14 +332,15 @@
     $("visitedDate").value = item?.visited_date || new Date().toISOString().slice(0,10);
     $("notes").value = item?.notes || "";
     $("favorite").checked = !!item?.is_favorite;
+    $("companionName").value = item?.companion_name || "";
+    $("companionRatingSection").classList.toggle("hidden", !$("companionName").value.trim());
+    $("companionRatingTitle").textContent = $("companionName").value.trim() ? `${$("companionName").value.trim()}'s rating` : "Their rating";
     $("menuFile").value = "";
     $("menuButtonText").textContent = item?.menu_file_name ? "Replace Menu" : "Attach Menu";
     $("removeMenuBtn").classList.toggle("hidden", !item?.menu_file_path);
     renderCurrentMenu(item?.menu_file_name, item?.menu_file_path);
     state.myRating = item?.my_rating == null ? null : Number(item.my_rating);
     state.partnerRating = item?.partner_rating == null ? null : Number(item.partner_rating);
-    $("partnerIncluded").checked = item?.partner_rating != null;
-    $("partnerRatingSection").classList.toggle("hidden", !$("partnerIncluded").checked);
     ratingButtons("myRating","myRating","myRatingLabel");
     ratingButtons("partnerRating","partnerRating","partnerRatingLabel");
     [...$("myRating").children].forEach(b => { if (Number(b.textContent) === state.myRating) b.classList.add("active"); });
@@ -363,16 +388,17 @@
               </div>
               ${r.location ? `<p class="text-sm text-purple-200/55 mt-1">📍 ${esc(r.location)}</p>` : ''}
               ${r.google_maps_url ? `<a href="${esc(r.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-purple-300 hover:text-white">🗺️ Open in Google Maps ↗</a>` : ''}
+              ${r.companion_name ? `<p class="text-sm text-purple-200/55 mt-2">👥 With ${esc(r.companion_name)}</p>` : `<p class="text-sm text-purple-200/45 mt-2">🍽️ Ate alone</p>`}
             </div>
-            <button class="btn btn-secondary px-3" onclick="editRestaurant('${esc(r.id)}')">Edit</button>
+            <button class="btn btn-secondary edit-btn" onclick="editRestaurant('${esc(r.id)}')">✎ Edit</button>
           </div>
 
           <div class="flex flex-wrap gap-2 mt-4 text-xs">
-            ${hours ? `<span class="tag rounded-full px-3 py-2">${hours}</span>` : ''}
-            <span class="tag rounded-full px-3 py-2">${cardText}</span>
-            <span class="tag rounded-full px-3 py-2">${r.pricey === "yes" ? "💸 Pricey" : "💰 Not pricey"}</span>
-            ${r.avg_price ? `<span class="tag rounded-full px-3 py-2">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
-            ${r.menu_file_path ? `<a class="tag rounded-full px-3 py-2 hover:border-violet-400" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
+            ${hours ? `<span class="info-badge info-hours">${hours}</span>` : ''}
+            <span class="info-badge ${r.card_payment === "yes" ? "info-card" : r.card_payment === "no" ? "info-cash" : "info-unknown"}">${cardText}</span>
+            <span class="info-badge ${r.pricey === "yes" ? "info-pricey" : "info-not-pricey"}">${r.pricey === "yes" ? "💸 Pricey" : "💰 Not pricey"}</span>
+            ${r.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
+            ${r.menu_file_path ? `<a class="info-badge info-unknown hover:brightness-125" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
           </div>
 
           <div class="grid grid-cols-3 gap-2 mt-5">
@@ -381,11 +407,11 @@
               <div class="font-black text-xl mt-1">${r.my_rating != null ? Number(r.my_rating).toFixed(1) : "—"}</div>
             </div>
             <div class="rounded-2xl bg-black/20 border border-purple-300/10 p-3">
-              <div class="text-xs text-purple-200/50">Partner</div>
+              <div class="text-xs text-purple-200/50">${r.companion_name ? esc(r.companion_name) : "Went alone"}</div>
               <div class="font-black text-xl mt-1">${r.partner_rating != null ? Number(r.partner_rating).toFixed(1) : "N/A"}</div>
             </div>
             <div class="rounded-2xl bg-gradient-to-br from-violet-950/80 to-purple-900/30 border border-violet-400/20 p-3">
-              <div class="text-xs text-purple-200/60">${r.partner_rating != null ? "Together" : "Your score"}</div>
+              <div class="text-xs text-purple-200/60">${r.partner_rating != null ? "Combined" : "Your score"}</div>
               <div class="font-black text-xl mt-1 text-purple-200">${together != null ? together.toFixed(1) : "—"}</div>
             </div>
           </div>
@@ -567,7 +593,8 @@
       pricey: $("pricey").value,
       avg_price: $("avgPrice").value.trim() || null,
       my_rating: state.myRating,
-      partner_rating: $("partnerIncluded").checked ? state.partnerRating : null,
+      companion_name: $("companionName").value.trim() || null,
+      partner_rating: $("companionName").value.trim() ? state.partnerRating : null,
       notes: $("notes").value.trim() || null,
       visited_date: $("visitedDate").value || null,
       is_favorite: $("favorite").checked,
@@ -593,6 +620,12 @@
       }
     }
 
+    if (payload.companion_name && payload.partner_rating == null) {
+      message.textContent = "Please select a rating for the person/group you went with, or clear the name field.";
+      message.classList.remove("hidden");
+      return;
+    }
+
     try {
       await saveRestaurant(payload, $("editId").value || null, menuFile);
       closeModal();
@@ -607,10 +640,11 @@
   $("emptyAdd").addEventListener("click", () => openModal());
   $("closeModal").addEventListener("click", closeModal);
   $("cancelBtn").addEventListener("click", closeModal);
-  $("partnerIncluded").addEventListener("change", () => {
-    const enabled = $("partnerIncluded").checked;
-    $("partnerRatingSection").classList.toggle("hidden", !enabled);
-    if (!enabled) {
+  $("companionName").addEventListener("input", () => {
+    const name = $("companionName").value.trim();
+    $("companionRatingSection").classList.toggle("hidden", !name);
+    $("companionRatingTitle").textContent = name ? `${name}'s rating` : "Their rating";
+    if (!name) {
       state.partnerRating = null;
       [...$("partnerRating").children].forEach(b => b.classList.remove("active"));
       $("partnerRatingLabel").textContent = "Not rated";
