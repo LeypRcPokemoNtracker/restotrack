@@ -86,6 +86,8 @@
     .info-pricey { color: #fcd34d; border-color: #f59e0b; background: rgba(245,158,11,.10); }
     .info-not-pricey { color: #a7f3d0; border-color: #10b981; background: rgba(16,185,129,.08); }
     .info-price { color: #f0abfc; border-color: #d946ef; background: rgba(217,70,239,.09); }
+    .info-category { color: #ddd6fe; border-color: #8b5cf6; background: rgba(139,92,246,.10); }
+    .info-type { color: #f9a8d4; border-color: #ec4899; background: rgba(236,72,153,.10); }
     .rating-btn {
       min-width: 42px;
       min-height: 38px;
@@ -146,6 +148,13 @@
           <option value="favorite">Favorites</option>
           <option value="card">Card accepted</option>
           <option value="cash">Cash only</option>
+          <option value="buffet">Buffet</option>
+          <option value="cafe">Cafe</option>
+          <option value="fast_food">Fast Food</option>
+          <option value="japanese">Japanese</option>
+          <option value="filipino">Filipino</option>
+          <option value="korean">Korean</option>
+          <option value="chinese">Chinese</option>
         </select>
       </div>
     </section>
@@ -277,8 +286,54 @@
               <input id="avgPrice" class="input mt-2" type="text" placeholder="e.g. ₱500 per person" />
             </label>
             <label class="block">
-              <span class="text-sm font-semibold">Date visited</span>
+              <span class="text-sm font-semibold">Date visited <span class="text-purple-200/50">(optional)</span></span>
               <input id="visitedDate" type="date" class="input mt-2" />
+              <p class="text-xs text-purple-200/50 mt-2">Leave blank if you don't want to record the visit date.</p>
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold">Restaurant category <span class="text-purple-200/50">(optional for buffet)</span></span>
+              <select id="category" class="input mt-2">
+                <option value="">Select category</option>
+                <option value="Filipino">🇵🇭 Filipino</option>
+                <option value="Japanese">🍣 Japanese</option>
+                <option value="Korean">🥢 Korean</option>
+                <option value="Chinese">🥟 Chinese</option>
+                <option value="Thai">🌶️ Thai</option>
+                <option value="Vietnamese">🍜 Vietnamese</option>
+                <option value="Italian">🍝 Italian</option>
+                <option value="American">🍔 American</option>
+                <option value="Mexican">🌮 Mexican</option>
+                <option value="Indian">🍛 Indian</option>
+                <option value="French">🥐 French</option>
+                <option value="Spanish">🥘 Spanish</option>
+                <option value="Mediterranean">🫒 Mediterranean</option>
+                <option value="Seafood">🦐 Seafood</option>
+                <option value="Steakhouse">🥩 Steakhouse</option>
+                <option value="Dessert">🍰 Dessert</option>
+                <option value="Cafe">☕ Cafe</option>
+                <option value="Bakery">🥖 Bakery</option>
+                <option value="Other">🍽️ Other</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold">Restaurant type</span>
+              <select id="restaurantType" class="input mt-2">
+                <option value="">Select type</option>
+                <option value="Buffet">🍱 Buffet</option>
+                <option value="Fast Food">🍔 Fast Food</option>
+                <option value="Casual Dining">🍽️ Casual Dining</option>
+                <option value="Fine Dining">🥂 Fine Dining</option>
+                <option value="Cafe">☕ Cafe</option>
+                <option value="Food Court">🏬 Food Court</option>
+                <option value="Food Stall">🛒 Food Stall</option>
+                <option value="Bar & Grill">🍖 Bar & Grill</option>
+                <option value="Bakery">🥖 Bakery</option>
+                <option value="Dessert Shop">🍰 Dessert Shop</option>
+                <option value="All-You-Can-Eat">♾️ All-You-Can-Eat</option>
+                <option value="Hotpot">🍲 Hotpot</option>
+                <option value="Ramen Shop">🍜 Ramen Shop</option>
+                <option value="Other">📍 Other</option>
+              </select>
             </label>
           </div>
 
@@ -396,6 +451,21 @@
     }
   }
 
+  function updateCategoryForType() {
+    const type = $("restaurantType").value;
+    const category = $("category");
+    const isBuffet = type === "Buffet" || type === "All-You-Can-Eat";
+
+    if (isBuffet) {
+      category.value = "";
+      category.disabled = true;
+      category.title = "Category is optional for buffet-style restaurants.";
+    } else {
+      category.disabled = false;
+      category.title = "";
+    }
+  }
+
   function openModal(item = null) {
     $("modal").classList.remove("hidden");
     $("modalTitle").textContent = item ? "Edit Restaurant" : "Add Restaurant";
@@ -407,7 +477,10 @@
     $("cardPayment").value = item?.card_payment || "yes";
     $("pricey").value = item?.pricey || "no";
     $("avgPrice").value = item?.avg_price || "";
-    $("visitedDate").value = item?.visited_date || new Date().toISOString().slice(0,10);
+    $("visitedDate").value = item?.visited_date || "";
+    $("category").value = item?.category || "";
+    $("restaurantType").value = item?.restaurant_type || "";
+    updateCategoryForType();
     $("notes").value = item?.notes || "";
     $("favorite").checked = !!item?.is_favorite;
     $("companionName").value = item?.companion_name || "";
@@ -436,12 +509,19 @@
     const sort = $("sort").value;
 
     let rows = state.restaurants.filter(r => {
-      const matchesSearch = !q || `${r.name} ${r.location || ""}`.toLowerCase().includes(q);
+      const matchesSearch = !q || `${r.name} ${r.location || ""} ${r.category || ""} ${r.restaurant_type || ""}`.toLowerCase().includes(q);
       const matchesFilter =
         filter === "all" ||
         (filter === "favorite" && r.is_favorite) ||
         (filter === "card" && r.card_payment === "yes") ||
-        (filter === "cash" && r.card_payment === "cash_only");
+        (filter === "cash" && r.card_payment === "cash_only") ||
+        (filter === "buffet" && r.restaurant_type === "Buffet") ||
+        (filter === "cafe" && (r.restaurant_type === "Cafe" || r.category === "Cafe")) ||
+        (filter === "fast_food" && r.restaurant_type === "Fast Food") ||
+        (filter === "japanese" && r.category === "Japanese") ||
+        (filter === "filipino" && r.category === "Filipino") ||
+        (filter === "korean" && r.category === "Korean") ||
+        (filter === "chinese" && r.category === "Chinese");
       return matchesSearch && matchesFilter;
     });
 
@@ -487,6 +567,8 @@
             }">${cardText}</span>
             <span class="info-badge ${r.pricey === "yes" ? "info-pricey" : "info-not-pricey"}">${r.pricey === "yes" ? "💸 Pricey" : "💰 Not pricey"}</span>
             ${r.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
+            ${r.category ? `<span class="info-badge info-category">🍴 ${esc(r.category)}</span>` : ""}
+            ${r.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(r.restaurant_type)}</span>` : ""}
             ${r.menu_file_path ? `<a class="info-badge info-unknown hover:brightness-125" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
           </div>
 
@@ -604,6 +686,8 @@
           ? '<span class="info-badge info-pricey">💸 Pricey</span>'
           : '<span class="info-badge info-not-pricey">💰 Not pricey</span>'}
         ${chosen.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(chosen.avg_price)}</span>` : ""}
+        ${chosen.category ? `<span class="info-badge info-category">🍴 ${esc(chosen.category)}</span>` : ""}
+        ${chosen.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(chosen.restaurant_type)}</span>` : ""}
         ${paymentBadge}
       </div>
       ${chosen.hours ? `<div class="text-sm text-purple-200/60 mt-4">🕐 ${esc(chosen.hours)}</div>` : ""}
@@ -783,6 +867,8 @@
       card_payment: $("cardPayment").value,
       pricey: $("pricey").value,
       avg_price: $("avgPrice").value.trim() || null,
+      category: $("category").value || null,
+      restaurant_type: $("restaurantType").value || null,
       my_rating: state.myRating,
       companion_name: $("companionName").value.trim() || null,
       partner_rating: $("companionName").value.trim() ? state.partnerRating : null,
@@ -834,6 +920,8 @@
   $("pickRandomBtn").addEventListener("click", pickRestaurant);
   $("closeModal").addEventListener("click", closeModal);
   $("cancelBtn").addEventListener("click", closeModal);
+  $("restaurantType").addEventListener("change", updateCategoryForType);
+
   $("companionName").addEventListener("input", () => {
     const name = $("companionName").value.trim();
     $("companionRatingSection").classList.toggle("hidden", !name);
