@@ -137,25 +137,13 @@
 
     <section class="glass rounded-2xl p-3 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3">
-        <input id="search" class="input" placeholder="Search restaurant or location…" />
+        <input id="search" class="input" placeholder="Search restaurant, location, category…" />
         <select id="sort" class="input md:w-48">
           <option value="rating">Highest rating</option>
           <option value="newest">Newest added</option>
           <option value="name">Name A–Z</option>
         </select>
-        <select id="filter" class="input md:w-44">
-          <option value="all">All restaurants</option>
-          <option value="favorite">Favorites</option>
-          <option value="card">Card accepted</option>
-          <option value="cash">Cash only</option>
-          <option value="buffet">Buffet</option>
-          <option value="cafe">Cafe</option>
-          <option value="fast_food">Fast Food</option>
-          <option value="japanese">Japanese</option>
-          <option value="filipino">Filipino</option>
-          <option value="korean">Korean</option>
-          <option value="chinese">Chinese</option>
-        </select>
+        <button id="filterBtn" type="button" class="btn btn-secondary md:min-w-44">⚙ Filters <span id="filterCount" class="hidden ml-1 rounded-full bg-violet-600 px-2 py-0.5 text-xs">0</span></button>
       </div>
     </section>
 
@@ -232,6 +220,125 @@
 
         <div id="pickResult" class="hidden mt-5 rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-950/70 to-purple-900/20 p-5"></div>
         <div id="pickMessage" class="hidden text-sm text-purple-200/65 text-center mt-4"></div>
+      </div>
+    </div>
+
+    <div id="filterModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
+      <div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7">
+        <div class="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <h2 class="text-xl font-black">⚙ Restaurant Filters</h2>
+            <p class="text-sm text-purple-200/55 mt-1">Narrow down your restaurant list using any combination.</p>
+          </div>
+          <button id="closeFilter" type="button" class="btn btn-secondary">✕</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="text-sm font-semibold">⭐ Rating</span>
+            <select id="filterRating" class="input mt-2">
+              <option value="all">Any rating</option>
+              <option value="9">9+</option>
+              <option value="8">8+</option>
+              <option value="7">7+</option>
+              <option value="6">6+</option>
+              <option value="below6">Below 6</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">🍴 Category</span>
+            <select id="filterCategory" class="input mt-2">
+              <option value="all">All categories</option>
+              <option value="Filipino">🇵🇭 Filipino</option>
+              <option value="Japanese">🍣 Japanese</option>
+              <option value="Korean">🥢 Korean</option>
+              <option value="Chinese">🥟 Chinese</option>
+              <option value="Thai">🌶️ Thai</option>
+              <option value="Vietnamese">🍜 Vietnamese</option>
+              <option value="Italian">🍝 Italian</option>
+              <option value="American">🍔 American</option>
+              <option value="Mexican">🌮 Mexican</option>
+              <option value="Indian">🍛 Indian</option>
+              <option value="French">🥐 French</option>
+              <option value="Spanish">🥘 Spanish</option>
+              <option value="Mediterranean">🫒 Mediterranean</option>
+              <option value="Seafood">🦐 Seafood</option>
+              <option value="Steakhouse">🥩 Steakhouse</option>
+              <option value="Dessert">🍰 Dessert</option>
+              <option value="Cafe">☕ Cafe</option>
+              <option value="Bakery">🥖 Bakery</option>
+              <option value="Other">🍽️ Other</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">🏷️ Restaurant Type</span>
+            <select id="filterType" class="input mt-2">
+              <option value="all">All types</option>
+              <option value="Buffet">🍱 Buffet</option>
+              <option value="Fast Food">🍔 Fast Food</option>
+              <option value="Casual Dining">🍽️ Casual Dining</option>
+              <option value="Fine Dining">🥂 Fine Dining</option>
+              <option value="Cafe">☕ Cafe</option>
+              <option value="Food Court">🏬 Food Court</option>
+              <option value="Food Stall">🛒 Food Stall</option>
+              <option value="Bar & Grill">🍖 Bar & Grill</option>
+              <option value="Bakery">🥖 Bakery</option>
+              <option value="Dessert Shop">🍰 Dessert Shop</option>
+              <option value="All-You-Can-Eat">♾️ All-You-Can-Eat</option>
+              <option value="Hotpot">🍲 Hotpot</option>
+              <option value="Ramen Shop">🍜 Ramen Shop</option>
+              <option value="Other">📍 Other</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">💰 Price</span>
+            <select id="filterPrice" class="input mt-2">
+              <option value="all">Any price</option>
+              <option value="not_pricey">Not pricey</option>
+              <option value="pricey">Pricey</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">💳 Payment</span>
+            <select id="filterPayment" class="input mt-2">
+              <option value="all">Any payment</option>
+              <option value="yes">Card accepted</option>
+              <option value="cash_only">No - Cash Only</option>
+              <option value="qrph">No - with QRPH</option>
+              <option value="sometimes">Sometimes</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-sm font-semibold">❤️ Favorites</span>
+            <select id="filterFavorite" class="input mt-2">
+              <option value="all">All restaurants</option>
+              <option value="favorite">Favorites only</option>
+            </select>
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="text-sm font-semibold">👥 Dining</span>
+            <select id="filterDining" class="input mt-2">
+              <option value="all">Everyone</option>
+              <option value="alone">Ate alone</option>
+              <option value="with">Went with someone</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 mt-6">
+          <button id="resetFilters" type="button" class="btn btn-secondary">Reset Filters</button>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="cancelFilters" type="button" class="btn btn-secondary">Cancel</button>
+            <button id="applyFilters" type="button" class="btn btn-primary">Apply Filters</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -411,7 +518,16 @@
     restaurants: [],
     myRating: null,
     partnerRating: null,
-    lastPickedId: null
+    lastPickedId: null,
+    filters: {
+      rating: "all",
+      category: "all",
+      type: "all",
+      price: "all",
+      payment: "all",
+      favorite: "all",
+      dining: "all"
+    }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -505,24 +621,40 @@
 
   function render() {
     const q = $("search").value.trim().toLowerCase();
-    const filter = $("filter").value;
     const sort = $("sort").value;
 
     let rows = state.restaurants.filter(r => {
       const matchesSearch = !q || `${r.name} ${r.location || ""} ${r.category || ""} ${r.restaurant_type || ""}`.toLowerCase().includes(q);
-      const matchesFilter =
-        filter === "all" ||
-        (filter === "favorite" && r.is_favorite) ||
-        (filter === "card" && r.card_payment === "yes") ||
-        (filter === "cash" && r.card_payment === "cash_only") ||
-        (filter === "buffet" && r.restaurant_type === "Buffet") ||
-        (filter === "cafe" && (r.restaurant_type === "Cafe" || r.category === "Cafe")) ||
-        (filter === "fast_food" && r.restaurant_type === "Fast Food") ||
-        (filter === "japanese" && r.category === "Japanese") ||
-        (filter === "filipino" && r.category === "Filipino") ||
-        (filter === "korean" && r.category === "Korean") ||
-        (filter === "chinese" && r.category === "Chinese");
-      return matchesSearch && matchesFilter;
+      const my = Number(r.my_rating);
+      const other = Number(r.partner_rating);
+      const companion = String(r.companion_name || "").trim();
+      const rating = companion && Number.isFinite(my) && Number.isFinite(other)
+        ? (my + other) / 2
+        : my;
+
+      const f = state.filters;
+      const matchesRating =
+        f.rating === "all" ||
+        (f.rating === "below6" && Number.isFinite(rating) && rating < 6) ||
+        (f.rating !== "below6" && Number.isFinite(rating) && rating >= Number(f.rating));
+
+      const matchesCategory = f.category === "all" || r.category === f.category;
+      const matchesType = f.type === "all" || r.restaurant_type === f.type;
+      const matchesPrice =
+        f.price === "all" ||
+        (f.price === "pricey" && r.pricey === "yes") ||
+        (f.price === "not_pricey" && r.pricey === "no");
+      const matchesPayment = f.payment === "all" || r.card_payment === f.payment;
+      const matchesFavorite = f.favorite === "all" || (f.favorite === "favorite" && r.is_favorite);
+      const matchesDining =
+        f.dining === "all" ||
+        (f.dining === "alone" && !companion) ||
+        (f.dining === "with" && !!companion);
+
+      // Keep the legacy filter value unused; all filtering now happens in the
+      // dedicated filter panel.
+      return matchesSearch && matchesRating && matchesCategory && matchesType &&
+        matchesPrice && matchesPayment && matchesFavorite && matchesDining;
     });
 
     rows.sort((a,b) => {
@@ -601,6 +733,62 @@
     $("statAvg").textContent = rated.length ? (rated.reduce((a,b)=>a+b,0)/rated.length).toFixed(1) : "—";
     const cardCount = state.restaurants.filter(r => r.card_payment === "yes").length;
     $("statCard").textContent = state.restaurants.length ? Math.round(cardCount/state.restaurants.length*100) + "%" : "0%";
+  }
+
+  function getActiveFilterCount() {
+    return Object.values(state.filters).filter(v => v !== "all").length;
+  }
+
+  function syncFilterControls() {
+    $("filterRating").value = state.filters.rating;
+    $("filterCategory").value = state.filters.category;
+    $("filterType").value = state.filters.type;
+    $("filterPrice").value = state.filters.price;
+    $("filterPayment").value = state.filters.payment;
+    $("filterFavorite").value = state.filters.favorite;
+    $("filterDining").value = state.filters.dining;
+
+    const count = getActiveFilterCount();
+    $("filterCount").textContent = count;
+    $("filterCount").classList.toggle("hidden", count === 0);
+  }
+
+  function openFilterModal() {
+    syncFilterControls();
+    $("filterModal").classList.remove("hidden");
+  }
+
+  function closeFilterModal() {
+    $("filterModal").classList.add("hidden");
+  }
+
+  function applyFilters() {
+    state.filters = {
+      rating: $("filterRating").value,
+      category: $("filterCategory").value,
+      type: $("filterType").value,
+      price: $("filterPrice").value,
+      payment: $("filterPayment").value,
+      favorite: $("filterFavorite").value,
+      dining: $("filterDining").value
+    };
+    syncFilterControls();
+    closeFilterModal();
+    render();
+  }
+
+  function resetFilters() {
+    state.filters = {
+      rating: "all",
+      category: "all",
+      type: "all",
+      price: "all",
+      payment: "all",
+      favorite: "all",
+      dining: "all"
+    };
+    syncFilterControls();
+    render();
   }
 
   function openPicker() {
@@ -933,10 +1121,16 @@
     }
   });
 
+  $("filterBtn").addEventListener("click", openFilterModal);
+  $("closeFilter").addEventListener("click", closeFilterModal);
+  $("cancelFilters").addEventListener("click", closeFilterModal);
+  $("applyFilters").addEventListener("click", applyFilters);
+  $("resetFilters").addEventListener("click", resetFilters);
+
   $("search").addEventListener("input", render);
   $("sort").addEventListener("change", render);
-  $("filter").addEventListener("change", render);
 
+  syncFilterControls();
   loadRestaurants();
 </script>
 </body>
