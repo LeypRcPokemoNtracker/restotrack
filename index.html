@@ -208,11 +208,11 @@
           </label>
 
           <label class="block">
-            <span class="text-sm font-semibold">📍 Too far</span>
+            <span class="text-sm font-semibold">📍 Outside Metro</span>
             <select id="pickTooFar" class="input mt-2">
-              <option value="exclude">Exclude too far</option>
-              <option value="include">Include too far</option>
-              <option value="only">Too far only</option>
+              <option value="exclude">Exclude Outside Metro</option>
+              <option value="include">Include Outside Metro</option>
+              <option value="only">Outside Metro only</option>
             </select>
           </label>
         </div>
@@ -337,6 +337,15 @@
               <option value="all">Everyone</option>
               <option value="alone">Ate alone</option>
               <option value="with">Went with someone</option>
+            </select>
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="text-sm font-semibold">📍 Location</span>
+            <select id="filterMetro" class="input mt-2">
+              <option value="all">All locations</option>
+              <option value="metro">Within the Metro</option>
+              <option value="outside">Outside Metro</option>
             </select>
           </label>
         </div>
@@ -499,8 +508,8 @@
             <label class="flex items-center gap-3 cursor-pointer">
               <input id="tooFar" type="checkbox" class="w-5 h-5 accent-violet-500" />
               <span>
-                <span class="text-sm font-semibold">📍 Too far to go</span>
-                <span class="block text-xs text-purple-200/50">Exclude this restaurant from "Where Should We Eat?"</span>
+                <span class="text-sm font-semibold">📍 Outside Metro</span>
+                <span class="block text-xs text-purple-200/50">Exclude this restaurant from "Where Should We Eat?" by default</span>
               </span>
             </label>
 
@@ -553,7 +562,8 @@
       price: "all",
       payment: "all",
       favorite: "all",
-      dining: "all"
+      dining: "all",
+      metro: "all"
     }
   };
 
@@ -680,10 +690,15 @@
         (f.dining === "alone" && !companion) ||
         (f.dining === "with" && !!companion);
 
+      const matchesMetro =
+        f.metro === "all" ||
+        (f.metro === "metro" && !!r.within_metro) ||
+        (f.metro === "outside" && !!r.too_far);
+
       // Keep the legacy filter value unused; all filtering now happens in the
       // dedicated filter panel.
       return matchesSearch && matchesRating && matchesCategory && matchesType &&
-        matchesPrice && matchesPayment && matchesFavorite && matchesDining;
+        matchesPrice && matchesPayment && matchesFavorite && matchesDining && matchesMetro;
     });
 
     rows.sort((a,b) => {
@@ -730,7 +745,7 @@
             ${r.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
             ${r.category ? `<span class="info-badge info-category">🍴 ${esc(r.category)}</span>` : ""}
             ${r.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(r.restaurant_type)}</span>` : ""}
-            ${r.too_far ? `<span class="info-badge info-cash">📍 Too far</span>` : ""}
+            ${r.too_far ? `<span class="info-badge info-cash">📍 Outside Metro</span>` : ""}
             ${r.within_metro ? `<span class="info-badge info-category">🏙️ Within the Metro</span>` : ""}
             ${r.menu_file_path ? `<a class="info-badge info-unknown hover:brightness-125" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
           </div>
@@ -778,6 +793,7 @@
     $("filterPayment").value = state.filters.payment;
     $("filterFavorite").value = state.filters.favorite;
     $("filterDining").value = state.filters.dining;
+    $("filterMetro").value = state.filters.metro;
 
     const count = getActiveFilterCount();
     $("filterCount").textContent = count;
@@ -801,7 +817,8 @@
       price: $("filterPrice").value,
       payment: $("filterPayment").value,
       favorite: $("filterFavorite").value,
-      dining: $("filterDining").value
+      dining: $("filterDining").value,
+      metro: $("filterMetro").value
     };
     syncFilterControls();
     closeFilterModal();
@@ -816,7 +833,8 @@
       price: "all",
       payment: "all",
       favorite: "all",
-      dining: "all"
+      dining: "all",
+      metro: "all"
     };
     syncFilterControls();
     render();
@@ -863,7 +881,7 @@
       if (payment !== "all" && r.card_payment !== paymentValues[payment]) return false;
       if (favorite === "favorite" && !r.is_favorite) return false;
 
-      // Too-far restaurants are excluded by default, but the picker can
+      // Outside Metro restaurants are excluded by default, but the picker can
       // explicitly include them or show only too-far restaurants.
       const tooFarMode = $("pickTooFar").value;
       if (tooFarMode === "exclude" && r.too_far) return false;
@@ -914,7 +932,7 @@
         ${chosen.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(chosen.avg_price)}</span>` : ""}
         ${chosen.category ? `<span class="info-badge info-category">🍴 ${esc(chosen.category)}</span>` : ""}
         ${chosen.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(chosen.restaurant_type)}</span>` : ""}
-        ${chosen.too_far ? `<span class="info-badge info-cash">📍 Too far</span>` : ""}
+        ${chosen.too_far ? `<span class="info-badge info-cash">📍 Outside Metro</span>` : ""}
         ${chosen.within_metro ? `<span class="info-badge info-category">🏙️ Within the Metro</span>` : ""}
         ${paymentBadge}
       </div>
