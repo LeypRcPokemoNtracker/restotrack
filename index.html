@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Personal Restaurant Tracker</title>
+  <title>Restaurant Tracker Foods</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -116,7 +116,7 @@
           <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-300 flex items-center justify-center text-xl">🍽️</div>
           <div>
             <h1 class="text-2xl sm:text-3xl font-black tracking-tight">Rate them up</h1>
-            <p class="text-sm text-purple-200/60">personal restaurant tracker</p>
+            <p class="text-sm text-purple-200/60">Personal Restaurant Tracker</p>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@
 
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
       <div class="glass rounded-2xl p-4"><div class="text-xs text-purple-200/55">Restaurants</div><div id="statTotal" class="text-2xl font-black mt-1">0</div></div>
-      <div class="glass rounded-2xl p-4"><div class="text-xs text-purple-200/55">Average Together</div><div id="statAvg" class="text-2xl font-black mt-1">—</div></div>
+      <div class="glass rounded-2xl p-4"><div class="text-xs text-purple-200/55">Average Combined</div><div id="statAvg" class="text-2xl font-black mt-1">—</div></div>
       <div class="glass rounded-2xl p-4"><div class="text-xs text-purple-200/55">Favorites</div><div id="statFav" class="text-2xl font-black mt-1">0</div></div>
       <div class="glass rounded-2xl p-4"><div class="text-xs text-purple-200/55">Card Accepted</div><div id="statCard" class="text-2xl font-black mt-1">0%</div></div>
     </section>
@@ -150,7 +150,7 @@
     <section id="empty" class="glass rounded-3xl p-10 text-center">
       <div class="text-5xl mb-4">🍜</div>
       <h2 class="text-xl font-bold">Your restaurant list is empty</h2>
-      <p class="text-sm text-purple-200/55 mt-2 mb-5">Start recording the places you and your partner visit.</p>
+      <p class="text-sm text-purple-200/55 mt-2 mb-5">Start recording the restaurants you visit.</p>
       <button class="btn btn-primary" id="emptyAdd">Add your first restaurant</button>
     </section>
 
@@ -246,7 +246,7 @@
 
           <label class="block">
             <span class="text-sm font-semibold">Notes</span>
-            <textarea id="notes" class="input mt-2 min-h-28" placeholder="What did you both think?"></textarea>
+            <textarea id="notes" class="input mt-2 min-h-28" placeholder="What did you think?"></textarea>
           </label>
 
           <label class="flex items-center gap-3 cursor-pointer">
@@ -295,11 +295,14 @@
   }
 
   function combined(r) {
+    const companion = String(r.companion_name || "").trim();
     const a = Number(r.my_rating);
     const b = Number(r.partner_rating);
-    if (!Number.isFinite(a) && !Number.isFinite(b)) return null;
-    if (!Number.isFinite(a)) return b;
-    if (!Number.isFinite(b)) return a;
+
+    // Only calculate a combined score when a companion was entered
+    // and both ratings are present.
+    if (!companion || !Number.isFinite(a) || !Number.isFinite(b)) return null;
+
     return Math.round(((a + b) / 2) * 10) / 10;
   }
 
@@ -367,7 +370,7 @@
         filter === "all" ||
         (filter === "favorite" && r.is_favorite) ||
         (filter === "card" && r.card_payment === "yes") ||
-        (filter === "cash" && r.card_payment === "no");
+        (filter === "cash" && r.card_payment === "cash_only");
       return matchesSearch && matchesFilter;
     });
 
@@ -426,8 +429,12 @@
               <div class="font-black text-xl mt-1">${r.partner_rating != null ? Number(r.partner_rating).toFixed(1) : "N/A"}</div>
             </div>
             <div class="rounded-2xl bg-gradient-to-br from-violet-950/80 to-purple-900/30 border border-violet-400/20 p-3">
-              <div class="text-xs text-purple-200/60">${r.partner_rating != null ? "Combined" : "Your score"}</div>
-              <div class="font-black text-xl mt-1 text-purple-200">${together != null ? together.toFixed(1) : "—"}</div>
+              <div class="text-xs text-purple-200/60">${r.companion_name && r.partner_rating != null ? "Combined" : "Your score"}</div>
+              <div class="font-black text-xl mt-1 text-purple-200">${
+                r.companion_name && r.partner_rating != null
+                  ? together.toFixed(1)
+                  : (r.my_rating != null ? Number(r.my_rating).toFixed(1) : "—")
+              }</div>
             </div>
           </div>
 
