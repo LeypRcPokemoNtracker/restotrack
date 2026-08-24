@@ -200,6 +200,20 @@
           </label>
 
           <label class="block">
+            <span class="text-sm font-semibold">🅿️ Parking</span>
+            <select id="pickParking" class="input mt-2">
+              <option value="all">Any parking</option>
+              <option value="yes">Parking available</option>
+              <option value="limited">Parking - Limited</option>
+              <option value="paid">Pay parking</option>
+              <option value="street">Street parking</option>
+              <option value="no">No parking</option>
+              <option value="mc_only">MC parking only</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </label>
+
+          <label class="block">
             <span class="text-sm font-semibold">Favorites</span>
             <select id="pickFavorite" class="input mt-2">
               <option value="all">All restaurants</option>
@@ -324,6 +338,20 @@
           </label>
 
           <label class="block">
+            <span class="text-sm font-semibold">🅿️ Parking</span>
+            <select id="filterParking" class="input mt-2">
+              <option value="all">Any parking</option>
+              <option value="yes">Parking available</option>
+              <option value="limited">Parking - Limited</option>
+              <option value="paid">Pay parking</option>
+              <option value="street">Street parking</option>
+              <option value="no">No parking</option>
+              <option value="mc_only">MC parking only</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </label>
+
+          <label class="block">
             <span class="text-sm font-semibold">❤️ Favorites</span>
             <select id="filterFavorite" class="input mt-2">
               <option value="all">All restaurants</option>
@@ -404,6 +432,18 @@
               <select id="pricey" class="input mt-2">
                 <option value="no">No</option>
                 <option value="yes">Yes</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="text-sm font-semibold">🅿️ Parking</span>
+              <select id="parking" class="input mt-2">
+                <option value="unknown">Unknown</option>
+                <option value="yes">Yes</option>
+                <option value="limited">Yes - Limited</option>
+                <option value="paid">Yes - Pay parking</option>
+                <option value="street">Yes - Street parking</option>
+                <option value="no">No</option>
+                <option value="mc_only">Yes - for MC only</option>
               </select>
             </label>
             <label class="block">
@@ -561,6 +601,7 @@
       type: "all",
       price: "all",
       payment: "all",
+      parking: "all",
       favorite: "all",
       dining: "all",
       metro: "all"
@@ -629,6 +670,7 @@
     $("hours").value = item?.hours || "";
     $("cardPayment").value = item?.card_payment || "yes";
     $("pricey").value = item?.pricey || "no";
+    $("parking").value = item?.parking || "unknown";
     $("avgPrice").value = item?.avg_price || "";
     $("visitedDate").value = item?.visited_date || "";
     $("category").value = item?.category || "";
@@ -684,6 +726,7 @@
         (f.price === "pricey" && r.pricey === "yes") ||
         (f.price === "not_pricey" && r.pricey === "no");
       const matchesPayment = f.payment === "all" || r.card_payment === f.payment;
+      const matchesParking = f.parking === "all" || r.parking === f.parking;
       const matchesFavorite = f.favorite === "all" || (f.favorite === "favorite" && r.is_favorite);
       const matchesDining =
         f.dining === "all" ||
@@ -698,7 +741,7 @@
       // Keep the legacy filter value unused; all filtering now happens in the
       // dedicated filter panel.
       return matchesSearch && matchesRating && matchesCategory && matchesType &&
-        matchesPrice && matchesPayment && matchesFavorite && matchesDining && matchesMetro;
+        matchesPrice && matchesPayment && matchesParking && matchesFavorite && matchesDining && matchesMetro;
     });
 
     rows.sort((a,b) => {
@@ -742,6 +785,13 @@
               "info-unknown"
             }">${cardText}</span>
             <span class="info-badge ${r.pricey === "yes" ? "info-pricey" : "info-not-pricey"}">${r.pricey === "yes" ? "💸 Pricey" : "💰 Not pricey"}</span>
+            ${r.parking === "yes" ? `<span class="info-badge info-card">🅿️ Parking</span>` :
+              r.parking === "limited" ? `<span class="info-badge info-pricey">🅿️ Limited Parking</span>` :
+              r.parking === "paid" ? `<span class="info-badge info-sometimes">💳 Pay Parking</span>` :
+              r.parking === "street" ? `<span class="info-badge info-category">🛣️ Street Parking</span>` :
+              r.parking === "no" ? `<span class="info-badge info-cash">🅿️ No Parking</span>` :
+              r.parking === "mc_only" ? `<span class="info-badge info-sometimes">🏍️ MC Parking Only</span>` :
+              r.parking === "unknown" ? `<span class="info-badge info-unknown">🅿️ Parking Unknown</span>` : ""}
             ${r.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
             ${r.category ? `<span class="info-badge info-category">🍴 ${esc(r.category)}</span>` : ""}
             ${r.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(r.restaurant_type)}</span>` : ""}
@@ -791,6 +841,7 @@
     $("filterType").value = state.filters.type;
     $("filterPrice").value = state.filters.price;
     $("filterPayment").value = state.filters.payment;
+    $("filterParking").value = state.filters.parking;
     $("filterFavorite").value = state.filters.favorite;
     $("filterDining").value = state.filters.dining;
     $("filterMetro").value = state.filters.metro;
@@ -816,6 +867,7 @@
       type: $("filterType").value,
       price: $("filterPrice").value,
       payment: $("filterPayment").value,
+      parking: $("filterParking").value,
       favorite: $("filterFavorite").value,
       dining: $("filterDining").value,
       metro: $("filterMetro").value
@@ -832,6 +884,7 @@
       type: "all",
       price: "all",
       payment: "all",
+      parking: "all",
       favorite: "all",
       dining: "all",
       metro: "all"
@@ -854,6 +907,7 @@
     const minRating = Number($("pickMinRating").value);
     const price = $("pickPrice").value;
     const payment = $("pickPayment").value;
+    const parking = $("pickParking").value;
     const favorite = $("pickFavorite").value;
     const excludeRecent = $("pickExcludeRecent").checked;
 
@@ -879,6 +933,7 @@
       if (price === "not_pricey" && r.pricey !== "no") return false;
       if (price === "pricey" && r.pricey !== "yes") return false;
       if (payment !== "all" && r.card_payment !== paymentValues[payment]) return false;
+      if (parking !== "all" && r.parking !== parking) return false;
       if (favorite === "favorite" && !r.is_favorite) return false;
 
       // Outside Metro restaurants are excluded by default, but the picker can
@@ -930,6 +985,13 @@
           ? '<span class="info-badge info-pricey">💸 Pricey</span>'
           : '<span class="info-badge info-not-pricey">💰 Not pricey</span>'}
         ${chosen.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(chosen.avg_price)}</span>` : ""}
+        ${chosen.parking === "yes" ? '<span class="info-badge info-card">🅿️ Parking</span>' :
+          chosen.parking === "limited" ? '<span class="info-badge info-pricey">🅿️ Limited Parking</span>' :
+          chosen.parking === "paid" ? '<span class="info-badge info-sometimes">💳 Pay Parking</span>' :
+          chosen.parking === "street" ? '<span class="info-badge info-category">🛣️ Street Parking</span>' :
+          chosen.parking === "no" ? '<span class="info-badge info-cash">🅿️ No Parking</span>' :
+          chosen.parking === "mc_only" ? '<span class="info-badge info-sometimes">🏍️ MC Parking Only</span>' :
+          chosen.parking === "unknown" ? '<span class="info-badge info-unknown">🅿️ Parking Unknown</span>' : ""}
         ${chosen.category ? `<span class="info-badge info-category">🍴 ${esc(chosen.category)}</span>` : ""}
         ${chosen.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(chosen.restaurant_type)}</span>` : ""}
         ${chosen.too_far ? `<span class="info-badge info-cash">📍 Outside Metro</span>` : ""}
@@ -1112,6 +1174,7 @@
       hours: $("hours").value.trim() || null,
       card_payment: $("cardPayment").value,
       pricey: $("pricey").value,
+      parking: $("parking").value,
       avg_price: $("avgPrice").value.trim() || null,
       category: $("category").value || null,
       restaurant_type: $("restaurantType").value || null,
