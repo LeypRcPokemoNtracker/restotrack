@@ -68,6 +68,11 @@
     }
     .rating-btn.active { background: #7c3aed; border-color: #a78bfa; color: white; }
     .tag { border: 1px solid #392849; background:#17101f; color:#cfc0dc; }
+    .menu-file {
+      display:flex; align-items:center; gap:8px; padding:10px 12px;
+      border-radius:12px; border:1px solid #392849; background:#17101f;
+      color:#ded2ea; font-size:.85rem;
+    }
     .hidden { display:none !important; }
     @media (max-width: 700px) {
       .rating-grid { grid-template-columns: repeat(5, minmax(0,1fr)); }
@@ -197,6 +202,20 @@
             </div>
           </div>
 
+          <div>
+            <div class="text-sm font-semibold">Menu</div>
+            <p class="text-xs text-purple-200/50 mt-1 mb-3">Optional. Upload a PDF or menu image, up to 10 MB.</p>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <label class="btn btn-secondary cursor-pointer text-center">
+                📎 <span id="menuButtonText">Attach Menu</span>
+                <input id="menuFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" />
+              </label>
+              <button type="button" id="removeMenuBtn" class="btn btn-secondary hidden">Remove Menu</button>
+            </div>
+            <div id="menuCurrent" class="mt-3"></div>
+            <div id="menuMessage" class="text-sm text-red-300 hidden mt-2"></div>
+          </div>
+
           <label class="block">
             <span class="text-sm font-semibold">Notes</span>
             <textarea id="notes" class="input mt-2 min-h-28" placeholder="What did you both think?"></textarea>
@@ -289,6 +308,10 @@
     $("visitedDate").value = item?.visited_date || new Date().toISOString().slice(0,10);
     $("notes").value = item?.notes || "";
     $("favorite").checked = !!item?.is_favorite;
+    $("menuFile").value = "";
+    $("menuButtonText").textContent = item?.menu_file_name ? "Replace Menu" : "Attach Menu";
+    $("removeMenuBtn").classList.toggle("hidden", !item?.menu_file_path);
+    renderCurrentMenu(item?.menu_file_name, item?.menu_file_path);
     state.myRating = item?.my_rating == null ? null : Number(item.my_rating);
     state.partnerRating = item?.partner_rating == null ? null : Number(item.partner_rating);
     $("partnerIncluded").checked = item?.partner_rating != null;
@@ -348,6 +371,7 @@
             <span class="tag rounded-full px-3 py-2">${cardText}</span>
             <span class="tag rounded-full px-3 py-2">${r.pricey === "yes" ? "💸 Pricey" : "💰 Not pricey"}</span>
             ${r.avg_price ? `<span class="tag rounded-full px-3 py-2">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
+            ${r.menu_file_path ? `<a class="tag rounded-full px-3 py-2 hover:border-violet-400" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
           </div>
 
           <div class="grid grid-cols-3 gap-2 mt-5">
@@ -382,6 +406,87 @@
     if (item) openModal(item);
   };
 
+  function publicMenuUrl(path) {
+    if (!path || !supabaseClient) return null;
+    return supabaseClient.storage.from("restaurant-menus").getPublicUrl(path).data.publicUrl;
+  }
+
+  function renderCurrentMenu(fileName, filePath) {
+    const box = $("menuCurrent");
+    if (!filePath) {
+      box.innerHTML = "";
+      return;
+    }
+    const url = publicMenuUrl(filePath);
+    const isPdf = /\.pdf$/i.test(fileName || filePath);
+    box.innerHTML = `
+      <div class="menu-file">
+        <span>${isPdf ? "📄" : "🖼️"}</span>
+        <span class="min-w-0 flex-1 truncate">${esc(fileName || "Menu")}</span>
+        <a href="${esc(url || "#")}" target="_blank" rel="noopener noreferrer"
+           class="font-bold text-purple-300 hover:text-white">View</a>
+      </div>`;
+  }
+
+  async function uploadMenu(file, restaurantId) {
+    if (!supabaseClient) return null;
+    if (!file) return null;
+    if (file.size > 10 * 1024 * 1024) throw new Error("Menu file must be 10 MB or smaller.");
+    const allowed = ["image/jpeg","image/png","image/webp","application/pdf"];
+    if (!allowed.includes(file.type)) throw new Error("Menu must be a PDF, JPG, PNG, or WebP file.");
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${restaurantId}/${Date.now()}-${safeName}`;
+
+    const { error } = await supabaseClient.storage
+      .from("restaurant-menus")
+      .upload(path, file, { upsert: false, contentType: file.type });
+
+    if (error) throw error;
+    return { name: file.name, path };
+  }
+
+  async function deleteMenu(path) {
+    if (!supabaseClient || !path) return;
+    const { error } = await supabaseClient.storage.from("restaurant-menus").remove([path]);
+    if (error) throw error;
+  }
+
+  $("menuFile").addEventListener("change", () => {
+    const file = $("menuFile").files[0];
+    $("menuMessage").classList.add("hidden");
+    if (file) {
+      $("menuButtonText").textContent = file.name;
+    }
+  });
+
+  $("removeMenuBtn").addEventListener("click", async () => {
+    const id = $("editId").value;
+    const item = state.restaurants.find(r => String(r.id) === String(id));
+    if (!item?.menu_file_path) return;
+
+    try {
+      await deleteMenu(item.menu_file_path);
+      if (supabaseClient) {
+        const { error } = await supabaseClient.from("restaurants")
+          .update({ menu_file_name: null, menu_file_path: null, updated_at: new Date().toISOString() })
+          .eq("id", id);
+        if (error) throw error;
+      } else {
+        item.menu_file_name = null;
+        item.menu_file_path = null;
+        localStorage.setItem("restaurant_tracker_demo", JSON.stringify(state.restaurants));
+      }
+      $("removeMenuBtn").classList.add("hidden");
+      $("menuButtonText").textContent = "Attach Menu";
+      renderCurrentMenu(null, null);
+      await loadRestaurants();
+    } catch (err) {
+      $("menuMessage").textContent = err?.message || "Unable to remove menu.";
+      $("menuMessage").classList.remove("hidden");
+    }
+  });
+
   function localLoad() {
     try {
       const data = JSON.parse(localStorage.getItem("restaurant_tracker_demo") || "[]");
@@ -408,7 +513,7 @@
     render();
   }
 
-  async function saveRestaurant(payload, editId) {
+  async function saveRestaurant(payload, editId, menuFile) {
     if (!supabaseClient) {
       if (editId) {
         state.restaurants = state.restaurants.map(r => String(r.id) === String(editId) ? {...r, ...payload, updated_at:new Date().toISOString()} : r);
@@ -427,6 +532,23 @@
       result = await supabaseClient.from("restaurants").insert(payload).select().single();
     }
     if (result.error) throw result.error;
+
+    const saved = result.data;
+    if (menuFile) {
+      const uploaded = await uploadMenu(menuFile, saved.id);
+      const { error: menuError } = await supabaseClient.from("restaurants")
+        .update({
+          menu_file_name: uploaded.name,
+          menu_file_path: uploaded.path,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", saved.id);
+      if (menuError) {
+        try { await deleteMenu(uploaded.path); } catch {}
+        throw menuError;
+      }
+    }
+
     await loadRestaurants();
   }
 
@@ -451,6 +573,8 @@
       updated_at: new Date().toISOString()
     };
 
+    const menuFile = $("menuFile").files[0] || null;
+
     if (!payload.name) {
       message.textContent = "Restaurant name is required.";
       message.classList.remove("hidden");
@@ -458,7 +582,7 @@
     }
 
     try {
-      await saveRestaurant(payload, $("editId").value || null);
+      await saveRestaurant(payload, $("editId").value || null, menuFile);
       closeModal();
     } catch (err) {
       console.error(err);
