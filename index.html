@@ -80,6 +80,8 @@
     .info-hours { color: #cbd5e1; border-color: #475569; background: rgba(51,65,85,.22); }
     .info-card { color: #86efac; border-color: #22c55e; background: rgba(34,197,94,.10); }
     .info-cash { color: #fca5a5; border-color: #ef4444; background: rgba(239,68,68,.10); }
+    .info-qrph { color: #67e8f9; border-color: #06b6d4; background: rgba(6,182,212,.10); }
+    .info-sometimes { color: #c4b5fd; border-color: #8b5cf6; background: rgba(139,92,246,.10); }
     .info-unknown { color: #c4b5fd; border-color: #8b5cf6; background: rgba(139,92,246,.10); }
     .info-pricey { color: #fcd34d; border-color: #f59e0b; background: rgba(245,158,11,.10); }
     .info-not-pricey { color: #a7f3d0; border-color: #10b981; background: rgba(16,185,129,.08); }
@@ -187,7 +189,9 @@
               <span class="text-sm font-semibold">Card payment</span>
               <select id="cardPayment" class="input mt-2">
                 <option value="yes">Yes</option>
-                <option value="no">No — cash only</option>
+                <option value="cash_only">No - Cash Only</option>
+                <option value="qrph">No - with QRPH</option>
+                <option value="sometimes">Sometimes</option>
                 <option value="unknown">Unknown</option>
               </select>
             </label>
@@ -376,7 +380,12 @@
     $("empty").classList.toggle("hidden", state.restaurants.length !== 0);
     $("list").innerHTML = rows.map(r => {
       const together = combined(r);
-      const cardText = r.card_payment === "yes" ? "💳 Card accepted" : r.card_payment === "no" ? "💵 Cash only" : "💳 Payment unknown";
+      const cardText =
+        r.card_payment === "yes" ? "💳 Card accepted" :
+        r.card_payment === "cash_only" ? "💵 Cash only" :
+        r.card_payment === "qrph" ? "📱 QRPH" :
+        r.card_payment === "sometimes" ? "💳 Sometimes" :
+        "💳 Payment unknown";
       const hours = r.hours ? `🕐 ${r.hours}` : "";
       return `
         <article class="glass rounded-3xl p-5">
@@ -395,7 +404,13 @@
 
           <div class="flex flex-wrap gap-2 mt-4 text-xs">
             ${hours ? `<span class="info-badge info-hours">${hours}</span>` : ''}
-            <span class="info-badge ${r.card_payment === "yes" ? "info-card" : r.card_payment === "no" ? "info-cash" : "info-unknown"}">${cardText}</span>
+            <span class="info-badge ${
+              r.card_payment === "yes" ? "info-card" :
+              r.card_payment === "cash_only" ? "info-cash" :
+              r.card_payment === "qrph" ? "info-qrph" :
+              r.card_payment === "sometimes" ? "info-sometimes" :
+              "info-unknown"
+            }">${cardText}</span>
             <span class="info-badge ${r.pricey === "yes" ? "info-pricey" : "info-not-pricey"}">${r.pricey === "yes" ? "💸 Pricey" : "💰 Not pricey"}</span>
             ${r.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
             ${r.menu_file_path ? `<a class="info-badge info-unknown hover:brightness-125" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
