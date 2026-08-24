@@ -481,10 +481,20 @@
             <textarea id="notes" class="input mt-2 min-h-28" placeholder="What did you think?"></textarea>
           </label>
 
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input id="favorite" type="checkbox" class="w-5 h-5 accent-violet-500" />
-            <span class="text-sm font-semibold">Add to favorites</span>
-          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input id="favorite" type="checkbox" class="w-5 h-5 accent-violet-500" />
+              <span class="text-sm font-semibold">Add to favorites</span>
+            </label>
+
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input id="tooFar" type="checkbox" class="w-5 h-5 accent-violet-500" />
+              <span>
+                <span class="text-sm font-semibold">📍 Too far to go</span>
+                <span class="block text-xs text-purple-200/50">Exclude this restaurant from "Where Should We Eat?"</span>
+              </span>
+            </label>
+          </div>
 
           <div id="formMessage" class="text-sm text-red-300 hidden"></div>
           <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
@@ -599,6 +609,7 @@
     updateCategoryForType();
     $("notes").value = item?.notes || "";
     $("favorite").checked = !!item?.is_favorite;
+    $("tooFar").checked = !!item?.too_far;
     $("companionName").value = item?.companion_name || "";
     $("companionRatingSection").classList.toggle("hidden", !$("companionName").value.trim());
     $("companionRatingTitle").textContent = $("companionName").value.trim() ? `${$("companionName").value.trim()}'s rating` : "Their rating";
@@ -701,6 +712,7 @@
             ${r.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
             ${r.category ? `<span class="info-badge info-category">🍴 ${esc(r.category)}</span>` : ""}
             ${r.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(r.restaurant_type)}</span>` : ""}
+            ${r.too_far ? `<span class="info-badge info-cash">📍 Too far</span>` : ""}
             ${r.menu_file_path ? `<a class="info-badge info-unknown hover:brightness-125" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
           </div>
 
@@ -831,6 +843,10 @@
       if (price === "pricey" && r.pricey !== "yes") return false;
       if (payment !== "all" && r.card_payment !== paymentValues[payment]) return false;
       if (favorite === "favorite" && !r.is_favorite) return false;
+
+      // Restaurants marked "Too far to go" are never recommended by default.
+      if (r.too_far) return false;
+
       if (excludeRecent && state.lastPickedId != null && String(r.id) === String(state.lastPickedId)) return false;
 
       return true;
@@ -876,6 +892,7 @@
         ${chosen.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(chosen.avg_price)}</span>` : ""}
         ${chosen.category ? `<span class="info-badge info-category">🍴 ${esc(chosen.category)}</span>` : ""}
         ${chosen.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(chosen.restaurant_type)}</span>` : ""}
+        ${chosen.too_far ? `<span class="info-badge info-cash">📍 Too far</span>` : ""}
         ${paymentBadge}
       </div>
       ${chosen.hours ? `<div class="text-sm text-purple-200/60 mt-4">🕐 ${esc(chosen.hours)}</div>` : ""}
@@ -1063,6 +1080,7 @@
       notes: $("notes").value.trim() || null,
       visited_date: $("visitedDate").value || null,
       is_favorite: $("favorite").checked,
+      too_far: $("tooFar").checked,
       updated_at: new Date().toISOString()
     };
 
