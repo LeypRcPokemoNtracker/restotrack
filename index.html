@@ -169,6 +169,8 @@
           <option value="rating">Highest rating</option>
           <option value="newest">Newest added</option>
           <option value="name">Name A–Z</option>
+          <option value="experience_desc">Most experiences</option>
+          <option value="experience_asc">Least experiences</option>
         </select>
         <button id="filterBtn" type="button" class="btn btn-secondary md:min-w-44">⚙ Filters <span id="filterCount" class="hidden ml-1 rounded-full bg-violet-600 px-2 py-0.5 text-xs">0</span></button>
       </div>
@@ -427,6 +429,15 @@
           </label>
 
           <label class="block sm:col-span-2">
+            <span class="text-sm font-semibold">📖 Experience</span>
+            <select id="filterExperience" class="input mt-2">
+              <option value="all">All restaurants</option>
+              <option value="has">Has experience</option>
+              <option value="none">No experience yet</option>
+            </select>
+          </label>
+
+          <label class="block sm:col-span-2">
             <span class="text-sm font-semibold">📍 Location</span>
             <select id="filterMetro" class="input mt-2">
               <option value="all">All locations</option>
@@ -657,7 +668,9 @@
     lastPickedId: null,
     experienceMyRating: null,
     experiencePartnerRating: null,
-    sortPreference: "rating",
+    sortPreference: "rating", // persists whichever sort option was last selected
+    experienceRestaurantIds: new Set(),
+    experienceCounts: {},
     filters: {
       rating: "all",
       category: "all",
@@ -667,6 +680,7 @@
       parking: "all",
       favorite: "all",
       dining: "all",
+      experience: "all",
       metro: "all"
     }
   };
@@ -880,6 +894,12 @@
         (f.dining === "alone" && !companion) ||
         (f.dining === "with" && !!companion);
 
+      const hasExperience = state.experienceRestaurantIds.has(String(r.id));
+      const matchesExperience =
+        f.experience === "all" ||
+        (f.experience === "has" && hasExperience) ||
+        (f.experience === "none" && !hasExperience);
+
       const matchesMetro =
         f.metro === "all" ||
         (f.metro === "metro" && !!r.within_metro) ||
@@ -888,12 +908,15 @@
       // Keep the legacy filter value unused; all filtering now happens in the
       // dedicated filter panel.
       return matchesSearch && matchesRating && matchesCategory && matchesType &&
-        matchesPrice && matchesPayment && matchesParking && matchesFavorite && matchesDining && matchesMetro;
+        matchesPrice && matchesPayment && matchesParking && matchesFavorite &&
+        matchesDining && matchesExperience && matchesMetro;
     });
 
     rows.sort((a,b) => {
       if (sort === "name") return a.name.localeCompare(b.name);
       if (sort === "newest") return String(b.created_at || "").localeCompare(String(a.created_at || ""));
+      if (sort === "experience_desc") return (state.experienceCounts?.[String(b.id)] || 0) - (state.experienceCounts?.[String(a.id)] || 0);
+      if (sort === "experience_asc") return (state.experienceCounts?.[String(a.id)] || 0) - (state.experienceCounts?.[String(b.id)] || 0);
       return (combined(b) ?? -1) - (combined(a) ?? -1);
     });
 
@@ -1003,6 +1026,7 @@
     $("filterParking").value = state.filters.parking;
     $("filterFavorite").value = state.filters.favorite;
     $("filterDining").value = state.filters.dining;
+    $("filterExperience").value = state.filters.experience;
     $("filterMetro").value = state.filters.metro;
 
     const count = getActiveFilterCount();
@@ -1029,6 +1053,7 @@
       parking: $("filterParking").value,
       favorite: $("filterFavorite").value,
       dining: $("filterDining").value,
+      experience: $("filterExperience").value,
       metro: $("filterMetro").value
     };
     syncFilterControls();
@@ -1046,6 +1071,7 @@
       parking: "all",
       favorite: "all",
       dining: "all",
+      experience: "all",
       metro: "all"
     };
     syncFilterControls();
@@ -1257,6 +1283,8 @@
   });
 
   async function loadSortPreference() {
+    // The saved value can be "rating", "newest", or "name" —
+    // whichever sort option was last selected.
     const fallback = localStorage.getItem("restaurant_sort_preference") || "rating";
 
     if (!supabaseClient) {
@@ -1278,10 +1306,12 @@
       state.sortPreference = data?.sort_preference || fallback;
     }
 
+    // Start the page on the last selected option.
     $("sort").value = state.sortPreference;
   }
 
   async function saveSortPreference(value) {
+    // Save exactly the option the user just selected.
     state.sortPreference = value;
     localStorage.setItem("restaurant_sort_preference", value);
 
@@ -1308,11 +1338,54 @@
     render();
   }
 
+  async function loadExperienceIndex() {
+    const ids = new Set();
+    const counts = {};
+
+    if (!supabaseClient) {
+      try {
+        const all = JSON.parse(localStorage.getItem("restaurant_experiences_demo") || "{}");
+        Object.entries(all).forEach(([id, experiences]) => {
+          if (Array.isArray(experiences) && experiences.length) {
+            ids.add(String(id));
+            counts[String(id)] = experiences.length;
+          }
+        });
+      } catch {}
+      state.experienceRestaurantIds = ids;
+      state.experienceCounts = counts;
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("restaurant_experiences")
+      .select("restaurant_id");
+
+    if (error) {
+      console.warn("Could not load experience data.", error);
+      state.experienceRestaurantIds = ids;
+      state.experienceCounts = counts;
+      return;
+    }
+
+    (data || []).forEach(row => {
+      if (!row.restaurant_id) return;
+      const id = String(row.restaurant_id);
+      ids.add(id);
+      counts[id] = (counts[id] || 0) + 1;
+    });
+
+    state.experienceRestaurantIds = ids;
+    state.experienceCounts = counts;
+  }
+
   async function loadRestaurants() {
     await loadSortPreference();
 
     if (!supabaseClient) {
       localLoad();
+      await loadExperienceIndex();
+      render();
       return;
     }
     const { data, error } = await supabaseClient.from("restaurants").select("*").order("created_at", {ascending:false});
@@ -1325,6 +1398,7 @@
       return;
     }
     state.restaurants = data || [];
+    await loadExperienceIndex();
     render();
   }
 
@@ -1449,7 +1523,7 @@
     }
   });
 
-  $("experienceForm").addEventListener("submit",async e=>{e.preventDefault();const m=$("experienceMessage"),rid=$("experienceRestaurantId").value,eid=$("experienceId").value||null,comp=$("experienceCompanion").value.trim()||null;m.classList.add("hidden");if(state.experienceMyRating==null){m.textContent="Please select your rating.";m.classList.remove("hidden");return}if(comp&&state.experiencePartnerRating==null){m.textContent="Please select the other person's rating, or clear the name field.";m.classList.remove("hidden");return}const payload={restaurant_id:rid,visited_date:$("experienceDate").value||null,companion_name:comp,my_rating:state.experienceMyRating,partner_rating:comp?state.experiencePartnerRating:null,notes:$("experienceNotes").value.trim()||null,updated_at:new Date().toISOString()};try{if(supabaseClient){const q=eid?await supabaseClient.from("restaurant_experiences").update(payload).eq("id",eid):await supabaseClient.from("restaurant_experiences").insert(payload);if(q.error)throw q.error}else{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");all[rid]=all[rid]||[];if(eid)all[rid]=all[rid].map(x=>String(x.id)===String(eid)?{...x,...payload}:x);else all[rid].push({id:crypto.randomUUID(),...payload});localStorage.setItem("restaurant_experiences_demo",JSON.stringify(all))}closeExperienceModal();await viewExperiences(rid)}catch(err){m.textContent=err?.message||"Unable to save experience.";m.classList.remove("hidden")}});
+  $("experienceForm").addEventListener("submit",async e=>{e.preventDefault();const m=$("experienceMessage"),rid=$("experienceRestaurantId").value,eid=$("experienceId").value||null,comp=$("experienceCompanion").value.trim()||null;m.classList.add("hidden");if(state.experienceMyRating==null){m.textContent="Please select your rating.";m.classList.remove("hidden");return}if(comp&&state.experiencePartnerRating==null){m.textContent="Please select the other person's rating, or clear the name field.";m.classList.remove("hidden");return}const payload={restaurant_id:rid,visited_date:$("experienceDate").value||null,companion_name:comp,my_rating:state.experienceMyRating,partner_rating:comp?state.experiencePartnerRating:null,notes:$("experienceNotes").value.trim()||null,updated_at:new Date().toISOString()};try{if(supabaseClient){const q=eid?await supabaseClient.from("restaurant_experiences").update(payload).eq("id",eid):await supabaseClient.from("restaurant_experiences").insert(payload);if(q.error)throw q.error}else{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");all[rid]=all[rid]||[];if(eid)all[rid]=all[rid].map(x=>String(x.id)===String(eid)?{...x,...payload}:x);else all[rid].push({id:crypto.randomUUID(),...payload});localStorage.setItem("restaurant_experiences_demo",JSON.stringify(all))}await loadExperienceIndex();closeExperienceModal();await viewExperiences(rid);render()}catch(err){m.textContent=err?.message||"Unable to save experience.";m.classList.remove("hidden")}});
   $("closeExperience").addEventListener("click",closeExperienceModal);$("cancelExperience").addEventListener("click",closeExperienceModal);$("closeExperienceHistory").addEventListener("click",closeExperienceHistory);
 
   $("filterBtn").addEventListener("click", openFilterModal);
