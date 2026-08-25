@@ -510,6 +510,7 @@
                 <option value="Bakery">🥖 Bakery</option>
                 <option value="Other">🍽️ Other</option>
               </select>
+              <button type="button" id="addCategoryOptionBtn" class="btn btn-secondary mt-2 w-full text-sm">＋ Add Option</button>
             </label>
             <label class="block">
               <span class="text-sm font-semibold">Restaurant type</span>
@@ -530,6 +531,7 @@
                 <option value="Ramen Shop">🍜 Ramen Shop</option>
                 <option value="Other">📍 Other</option>
               </select>
+              <button type="button" id="addTypeOptionBtn" class="btn btn-secondary mt-2 w-full text-sm">＋ Add Option</button>
             </label>
           </div>
 
@@ -678,6 +680,89 @@
     }
   }
 
+  const CUSTOM_OPTIONS_KEY = "rate_them_up_custom_options";
+
+  const defaultCategoryValues = [
+    "", "Filipino", "Japanese", "Korean", "Chinese", "Thai", "Vietnamese",
+    "Italian", "American", "Mexican", "Indian", "French", "Spanish",
+    "Mediterranean", "Seafood", "Steakhouse", "Dessert", "Cafe", "Bakery", "Other"
+  ];
+
+  const defaultTypeValues = [
+    "", "Buffet", "Fast Food", "Casual Dining", "Fine Dining", "Cafe",
+    "Food Court", "Food Stall", "Bar & Grill", "Bakery", "Dessert Shop",
+    "All-You-Can-Eat", "Hotpot", "Ramen Shop", "Other"
+  ];
+
+  function getCustomOptions() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CUSTOM_OPTIONS_KEY) || "{}");
+      return {
+        categories: Array.isArray(saved.categories) ? saved.categories : [],
+        types: Array.isArray(saved.types) ? saved.types : []
+      };
+    } catch {
+      return { categories: [], types: [] };
+    }
+  }
+
+  function saveCustomOptions(options) {
+    localStorage.setItem(CUSTOM_OPTIONS_KEY, JSON.stringify(options));
+  }
+
+  function insertCustomOptions(selectId, customValues, defaultValues, icon) {
+    const select = $(selectId);
+    if (!select) return;
+
+    [...select.querySelectorAll("option[data-custom-option='true']")].forEach(o => o.remove());
+
+    const otherOption = [...select.options].find(o => o.value === "Other");
+    customValues.forEach(value => {
+      if (!value || defaultValues.includes(value)) return;
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = `${icon} ${value}`;
+      option.dataset.customOption = "true";
+      if (otherOption) select.insertBefore(option, otherOption);
+      else select.appendChild(option);
+    });
+  }
+
+  function refreshCustomOptions() {
+    const custom = getCustomOptions();
+    insertCustomOptions("category", custom.categories, defaultCategoryValues, "🍽️");
+    insertCustomOptions("restaurantType", custom.types, defaultTypeValues, "📍");
+    insertCustomOptions("filterCategory", custom.categories, defaultCategoryValues, "🍽️");
+    insertCustomOptions("filterType", custom.types, defaultTypeValues, "📍");
+  }
+
+  function addCustomOption(kind) {
+    const isCategory = kind === "category";
+    const label = isCategory ? "category" : "restaurant type";
+    const input = prompt(`Enter a new ${label}:`);
+    if (input === null) return;
+
+    const value = input.trim();
+    if (!value) return;
+
+    const custom = getCustomOptions();
+    const list = isCategory ? custom.categories : custom.types;
+    const defaults = isCategory ? defaultCategoryValues : defaultTypeValues;
+
+    if ([...defaults, ...list].some(v => v.toLowerCase() === value.toLowerCase())) {
+      alert(`"${value}" already exists.`);
+      return;
+    }
+
+    list.push(value);
+    saveCustomOptions(custom);
+    refreshCustomOptions();
+
+    const selectId = isCategory ? "category" : "restaurantType";
+    $(selectId).value = value;
+    if (isCategory) updateCategoryForType();
+  }
+
   function updateCategoryForType() {
     const type = $("restaurantType").value;
     const category = $("category");
@@ -706,6 +791,7 @@
     $("parking").value = item?.parking || "unknown";
     $("avgPrice").value = item?.avg_price || "";
     $("visitedDate").value = item?.visited_date || "";
+    refreshCustomOptions();
     $("category").value = item?.category || "";
     $("restaurantType").value = item?.restaurant_type || "";
     updateCategoryForType();
@@ -1298,9 +1384,14 @@
   $("applyFilters").addEventListener("click", applyFilters);
   $("resetFilters").addEventListener("click", resetFilters);
 
+  $("addCategoryOptionBtn").addEventListener("click", () => addCustomOption("category"));
+  $("addTypeOptionBtn").addEventListener("click", () => addCustomOption("type"));
+  $("restaurantType").addEventListener("change", updateCategoryForType);
+
   $("search").addEventListener("input", render);
   $("sort").addEventListener("change", render);
 
+  refreshCustomOptions();
   syncFilterControls();
   loadRestaurants();
 </script>
