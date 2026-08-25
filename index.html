@@ -81,7 +81,20 @@
       min-width: 0;
     }
     .restaurant-header { display: block; }
-    .restaurant-title { line-height: 1.15; }
+    .restaurant-title {
+      color: #ff4fd8;
+      text-shadow:
+        0 0 6px rgba(255,79,216,.55),
+        0 0 16px rgba(255,79,216,.28);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .restaurant-title:hover {
+      color: #ff7de6;
+      text-shadow:
+        0 0 8px rgba(255,125,230,.65),
+        0 0 20px rgba(255,79,216,.34);
+    }
     @media (max-width: 520px) {
       .restaurant-actions {
         width: 100%;
