@@ -657,6 +657,7 @@
     lastPickedId: null,
     experienceMyRating: null,
     experiencePartnerRating: null,
+    sortPreference: "rating",
     filters: {
       rating: "all",
       category: "all",
@@ -1255,6 +1256,50 @@
     }
   });
 
+  async function loadSortPreference() {
+    const fallback = localStorage.getItem("restaurant_sort_preference") || "rating";
+
+    if (!supabaseClient) {
+      state.sortPreference = fallback;
+      $("sort").value = state.sortPreference;
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("app_settings")
+      .select("sort_preference")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("Could not load saved sort preference. Using the local/default preference.", error);
+      state.sortPreference = fallback;
+    } else {
+      state.sortPreference = data?.sort_preference || fallback;
+    }
+
+    $("sort").value = state.sortPreference;
+  }
+
+  async function saveSortPreference(value) {
+    state.sortPreference = value;
+    localStorage.setItem("restaurant_sort_preference", value);
+
+    if (!supabaseClient) return;
+
+    const { error } = await supabaseClient
+      .from("app_settings")
+      .upsert({
+        id: 1,
+        sort_preference: value,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "id" });
+
+    if (error) {
+      console.warn("Could not save sort preference to Supabase.", error);
+    }
+  }
+
   function localLoad() {
     try {
       const data = JSON.parse(localStorage.getItem("restaurant_tracker_demo") || "[]");
@@ -1264,6 +1309,8 @@
   }
 
   async function loadRestaurants() {
+    await loadSortPreference();
+
     if (!supabaseClient) {
       localLoad();
       return;
@@ -1416,7 +1463,10 @@
   $("restaurantType").addEventListener("change", updateCategoryForType);
 
   $("search").addEventListener("input", render);
-  $("sort").addEventListener("change", render);
+  $("sort").addEventListener("change", async () => {
+    await saveSortPreference($("sort").value);
+    render();
+  });
 
   refreshCustomOptions();
   syncFilterControls();
