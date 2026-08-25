@@ -156,6 +156,37 @@
 
     <section id="list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></section>
 
+    <div id="experienceModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
+      <div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7">
+        <div class="flex items-start justify-between gap-4 mb-5">
+          <div><h2 id="experienceModalTitle" class="text-xl font-black">Add Experience</h2><p id="experienceRestaurantName" class="text-sm text-purple-200/55 mt-1"></p></div>
+          <button id="closeExperience" type="button" class="btn btn-secondary">✕</button>
+        </div>
+        <form id="experienceForm" class="space-y-5">
+          <input type="hidden" id="experienceId"><input type="hidden" id="experienceRestaurantId">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm font-semibold">Date visited <span class="text-purple-200/50">(optional)</span></span>
+              <input id="experienceDate" type="date" class="input mt-2">
+              <p class="text-xs text-purple-200/50 mt-2">Leave blank if you don't remember the date.</p>
+            </label>
+            <label class="block"><span class="text-sm font-semibold">Who I went with <span class="text-purple-200/50">(optional)</span></span><input id="experienceCompanion" class="input mt-2" placeholder="Leave blank if alone"></label>
+          </div>
+          <div><div class="text-sm font-semibold mb-2">Your rating <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div><div id="experienceMyRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="experienceMyRatingLabel" class="text-sm text-purple-200/65 mt-2">Not rated</div></div>
+          <div><div class="text-sm font-semibold mb-2">Other person's rating <span class="text-purple-200/50">(optional)</span></div><div id="experiencePartnerRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="experiencePartnerRatingLabel" class="text-sm text-purple-200/65 mt-2">Not rated</div></div>
+          <label class="block"><span class="text-sm font-semibold">What was the experience like?</span><textarea id="experienceNotes" class="input mt-2 min-h-32" placeholder="Food, service, parking, waiting time, atmosphere, what changed since your last visit, etc."></textarea></label>
+          <div id="experienceMessage" class="text-sm text-red-300 hidden"></div>
+          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3"><button type="button" id="cancelExperience" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Save Experience</button></div>
+        </form>
+      </div>
+    </div>
+    <div id="experienceHistoryModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
+      <div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7">
+        <div class="flex items-start justify-between gap-4 mb-5"><div><h2 id="historyModalTitle" class="text-xl font-black">Experience History</h2><p class="text-sm text-purple-200/55 mt-1">See how your opinion changed from visit to visit.</p></div><button id="closeExperienceHistory" type="button" class="btn btn-secondary">✕</button></div>
+        <div id="experienceHistoryList" class="space-y-3"></div>
+      </div>
+    </div>
+
     <div id="pickerModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
       <div class="max-w-lg mx-auto my-10 glass rounded-3xl p-6 sm:p-7">
         <div class="flex items-start justify-between gap-4 mb-5">
@@ -595,6 +626,8 @@
     myRating: null,
     partnerRating: null,
     lastPickedId: null,
+    experienceMyRating: null,
+    experiencePartnerRating: null,
     filters: {
       rating: "all",
       category: "all",
@@ -772,7 +805,11 @@
               ${r.google_maps_url ? `<a href="${esc(r.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-purple-300 hover:text-white">🗺️ Open in Google Maps ↗</a>` : ''}
               ${r.companion_name ? `<p class="text-sm text-purple-200/55 mt-2">👥 With ${esc(r.companion_name)}</p>` : `<p class="text-sm text-purple-200/45 mt-2">🍽️ Ate alone</p>`}
             </div>
-            <button class="btn btn-secondary edit-btn" onclick="editRestaurant('${esc(r.id)}')">✎ Edit</button>
+            <div class="flex flex-wrap justify-end gap-2">
+              <button class="btn btn-secondary edit-btn" onclick="openExperienceModal('${esc(r.id)}')">＋ Experience</button>
+              <button class="btn btn-secondary edit-btn" onclick="viewExperiences('${esc(r.id)}')">📖 History</button>
+              <button class="btn btn-secondary edit-btn" onclick="editRestaurant('${esc(r.id)}')">✎ Edit</button>
+            </div>
           </div>
 
           <div class="flex flex-wrap gap-2 mt-4 text-xs">
@@ -830,6 +867,14 @@
     const cardCount = state.restaurants.filter(r => r.card_payment === "yes").length;
     $("statCard").textContent = state.restaurants.length ? Math.round(cardCount/state.restaurants.length*100) + "%" : "0%";
   }
+
+  function experienceRatingButtons(id,key,label){const el=$(id);el.innerHTML="";for(let i=1;i<=20;i++){const v=i/2,b=document.createElement("button");b.type="button";b.className="rating-btn";b.textContent=v%1===0?v.toFixed(0):v.toFixed(1);b.onclick=()=>{state[key]=v;[...el.children].forEach(x=>x.classList.toggle("active",Number(x.textContent)===v));$(label).textContent=v.toFixed(1)+" / 10"};el.appendChild(b)}}
+  function openExperienceModal(rid,e=null){const r=state.restaurants.find(x=>String(x.id)===String(rid));if(!r)return;$("experienceModal").classList.remove("hidden");$("experienceModalTitle").textContent=e?"Edit Experience":"Add Experience";$("experienceRestaurantName").textContent=r.name;$("experienceId").value=e?.id||"";$("experienceRestaurantId").value=r.id;$("experienceDate").value=e?.visited_date||"";$("experienceCompanion").value=e?.companion_name||"";$("experienceNotes").value=e?.notes||"";state.experienceMyRating=e?.my_rating==null?null:Number(e.my_rating);state.experiencePartnerRating=e?.partner_rating==null?null:Number(e.partner_rating);experienceRatingButtons("experienceMyRating","experienceMyRating","experienceMyRatingLabel");experienceRatingButtons("experiencePartnerRating","experiencePartnerRating","experiencePartnerRatingLabel");[...$("experienceMyRating").children].forEach(b=>b.classList.toggle("active",Number(b.textContent)===state.experienceMyRating));[...$("experiencePartnerRating").children].forEach(b=>b.classList.toggle("active",Number(b.textContent)===state.experiencePartnerRating));$("experienceMyRatingLabel").textContent=state.experienceMyRating==null?"Not rated":state.experienceMyRating.toFixed(1)+" / 10";$("experiencePartnerRatingLabel").textContent=state.experiencePartnerRating==null?"Not rated":state.experiencePartnerRating.toFixed(1)+" / 10";$("experienceMessage").classList.add("hidden")}
+  function closeExperienceModal(){$("experienceModal").classList.add("hidden")}
+  async function viewExperiences(rid){const r=state.restaurants.find(x=>String(x.id)===String(rid));if(!r)return;$("historyModalTitle").textContent=r.name+" — Experience History";$("experienceHistoryModal").classList.remove("hidden");const box=$("experienceHistoryList");box.innerHTML='<div class="text-sm text-purple-200/60 text-center py-6">Loading experiences…</div>';let data=[];if(supabaseClient){const q=await supabaseClient.from("restaurant_experiences").select("*").eq("restaurant_id",rid).order("visited_date",{ascending:false});if(q.error){box.innerHTML='<div class="text-sm text-red-300">'+esc(q.error.message)+'</div>';return}data=q.data||[]}else{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");data=(all[rid]||[]).sort((a,b)=>String(b.visited_date||"").localeCompare(String(a.visited_date||"")))}if(!data.length){box.innerHTML='<div class="rounded-2xl border border-purple-300/10 bg-black/20 p-6 text-center"><div class="text-3xl mb-2">🍽️</div><div class="font-bold">No experiences recorded yet</div><div class="text-sm text-purple-200/50 mt-1">Add the first experience from your next visit.</div></div>';return}box.innerHTML=data.map((e,i)=>{const my=e.my_rating!=null?Number(e.my_rating).toFixed(1):"—",p=e.partner_rating!=null?Number(e.partner_rating).toFixed(1):"—",score=e.my_rating!=null&&e.partner_rating!=null?((Number(e.my_rating)+Number(e.partner_rating))/2).toFixed(1):my;return `<article class="rounded-2xl border border-purple-300/10 bg-black/20 p-4"><div class="flex justify-between gap-3"><div><div class="text-xs uppercase tracking-wider text-purple-300/55 font-bold">Visit ${data.length-i}</div><div class="font-black text-lg mt-1">${esc(e.visited_date||"Date not recorded")}</div><div class="text-xs text-purple-200/50 mt-1">${e.companion_name?`👥 With ${esc(e.companion_name)}`:"🍽️ Ate alone"}</div></div><button class="edit-btn btn btn-secondary" onclick="editExperience('${esc(e.id)}','${esc(rid)}')">✎ Edit</button></div><div class="grid grid-cols-3 gap-2 mt-4"><div class="rounded-xl bg-black/20 border border-purple-300/10 p-3"><div class="text-xs text-purple-200/50">You</div><div class="font-black text-lg mt-1">${my}</div></div><div class="rounded-xl bg-black/20 border border-purple-300/10 p-3"><div class="text-xs text-purple-200/50">Other</div><div class="font-black text-lg mt-1">${p}</div></div><div class="rounded-xl bg-violet-950/50 border border-violet-400/20 p-3"><div class="text-xs text-purple-200/60">Score</div><div class="font-black text-lg mt-1 text-purple-200">${score}</div></div></div>${e.notes?`<p class="text-sm text-purple-100/70 mt-4 leading-6">“${esc(e.notes)}”</p>`:""}</article>`}).join("")}
+  async function editExperience(eid,rid){if(!supabaseClient){const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");const e=(all[rid]||[]).find(x=>String(x.id)===String(eid));if(e)openExperienceModal(rid,e);return}const q=await supabaseClient.from("restaurant_experiences").select("*").eq("id",eid).single();if(q.error){alert(q.error.message);return}openExperienceModal(rid,q.data)}
+  function closeExperienceHistory(){$("experienceHistoryModal").classList.add("hidden")}
+  window.openExperienceModal=openExperienceModal;window.viewExperiences=viewExperiences;window.editExperience=editExperience;window.closeExperienceHistory=closeExperienceHistory;
 
   function getActiveFilterCount() {
     return Object.values(state.filters).filter(v => v !== "all").length;
@@ -1243,6 +1288,9 @@
       $("partnerRatingLabel").textContent = "Not rated";
     }
   });
+
+  $("experienceForm").addEventListener("submit",async e=>{e.preventDefault();const m=$("experienceMessage"),rid=$("experienceRestaurantId").value,eid=$("experienceId").value||null,comp=$("experienceCompanion").value.trim()||null;m.classList.add("hidden");if(!$("experienceDate").value||state.experienceMyRating==null){m.textContent="Please select a visit date and your rating.";m.classList.remove("hidden");return}if(comp&&state.experiencePartnerRating==null){m.textContent="Please select the other person's rating, or clear the name field.";m.classList.remove("hidden");return}const payload={restaurant_id:rid,visited_date:$("experienceDate").value,companion_name:comp,my_rating:state.experienceMyRating,partner_rating:comp?state.experiencePartnerRating:null,notes:$("experienceNotes").value.trim()||null,updated_at:new Date().toISOString()};try{if(supabaseClient){const q=eid?await supabaseClient.from("restaurant_experiences").update(payload).eq("id",eid):await supabaseClient.from("restaurant_experiences").insert(payload);if(q.error)throw q.error}else{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");all[rid]=all[rid]||[];if(eid)all[rid]=all[rid].map(x=>String(x.id)===String(eid)?{...x,...payload}:x);else all[rid].push({id:crypto.randomUUID(),...payload});localStorage.setItem("restaurant_experiences_demo",JSON.stringify(all))}closeExperienceModal();await viewExperiences(rid)}catch(err){m.textContent=err?.message||"Unable to save experience.";m.classList.remove("hidden")}});
+  $("closeExperience").addEventListener("click",closeExperienceModal);$("cancelExperience").addEventListener("click",closeExperienceModal);$("closeExperienceHistory").addEventListener("click",closeExperienceHistory);
 
   $("filterBtn").addEventListener("click", openFilterModal);
   $("closeFilter").addEventListener("click", closeFilterModal);
