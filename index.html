@@ -66,18 +66,31 @@
       white-space: nowrap;
     }
     .restaurant-actions {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      flex-wrap: nowrap;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr .72fr;
+      align-items: stretch;
       gap: 7px;
-      margin-bottom: 12px;
+      width: min(100%, 390px);
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(196,167,255,.10);
+    }
+    .restaurant-actions .edit-btn {
+      width: 100%;
+      justify-content: center;
+      min-width: 0;
     }
     .restaurant-header { display: block; }
     .restaurant-title { line-height: 1.15; }
     @media (max-width: 520px) {
-      .restaurant-actions { justify-content: flex-start; }
-      .restaurant-actions .edit-btn { flex: 1 1 0; min-width: 0; }
+      .restaurant-actions {
+        width: 100%;
+        grid-template-columns: 1.15fr 1fr .72fr;
+      }
+      .restaurant-actions .edit-btn {
+        font-size: .72rem;
+        padding: 0 7px;
+      }
     }
     .info-badge {
       display: inline-flex;
