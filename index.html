@@ -7,165 +7,44 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #09070d;
-      --panel: #120d19;
-      --panel2: #181020;
-      --border: #30213d;
-      --violet: #8b5cf6;
-      --lilac: #c4a7ff;
-      --muted: #9d91aa;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 15% 0%, rgba(139,92,246,.20), transparent 30%),
-        radial-gradient(circle at 90% 10%, rgba(196,167,255,.10), transparent 25%),
-        var(--bg);
-      color: #f8f5ff;
-    }
-    .glass {
-      background: rgba(18,13,25,.86);
-      border: 1px solid rgba(196,167,255,.14);
-      box-shadow: 0 20px 70px rgba(0,0,0,.28);
-      backdrop-filter: blur(18px);
-    }
-    .input {
-      width: 100%;
-      min-height: 46px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #0d0912;
-      color: #fff;
-      padding: 0 13px;
-      outline: none;
-    }
-    .input:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139,92,246,.13); }
-    textarea.input { padding-top: 12px; }
-    .btn {
-      min-height: 44px;
-      border-radius: 12px;
-      padding: 0 16px;
-      font-weight: 700;
-      transition: .18s ease;
-    }
-    .btn-primary { background: linear-gradient(135deg,#7c3aed,#a78bfa); color: white; }
-    .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
-    .btn-secondary { background: #191222; border: 1px solid #382747; color: #ddd0f0; }
-    .btn-secondary:hover { border-color: #6d4b8d; }
-    .edit-btn {
-      min-height: 34px;
-      height: 34px;
-      padding: 0 10px;
-      border-radius: 9px;
-      font-size: .75rem;
-      white-space: nowrap;
-    }
-    .restaurant-actions {
-      display: grid;
-      grid-template-columns: 1.15fr 1fr .72fr;
-      align-items: stretch;
-      gap: 7px;
-      width: min(100%, 390px);
-      margin-bottom: 15px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(196,167,255,.10);
-    }
-    .restaurant-actions .edit-btn {
-      width: 100%;
-      justify-content: center;
-      min-width: 0;
-    }
-    .restaurant-header { display: block; }
-    .restaurant-title {
-      color: #ff4fd8;
-      text-shadow:
-        0 0 6px rgba(255,79,216,.55),
-        0 0 16px rgba(255,79,216,.28);
-      font-weight: 900;
-      letter-spacing: -0.02em;
-    }
-    .restaurant-title:hover {
-      color: #ff7de6;
-      text-shadow:
-        0 0 8px rgba(255,125,230,.65),
-        0 0 20px rgba(255,79,216,.34);
-    }
-    @media (max-width: 520px) {
-      .restaurant-actions {
-        width: 100%;
-        grid-template-columns: 1.15fr 1fr .72fr;
-      }
-      .restaurant-actions .edit-btn {
-        font-size: .72rem;
-        padding: 0 7px;
-      }
-    }
-    .info-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 36px;
-      padding: 0 12px;
-      border-radius: 11px;
-      font-size: .78rem;
-      font-weight: 800;
-      border: 1px solid;
-      box-shadow: inset 0 0 18px rgba(255,255,255,.025);
-    }
-    .info-hours { color: #cbd5e1; border-color: #475569; background: rgba(51,65,85,.22); }
-    .info-card { color: #86efac; border-color: #22c55e; background: rgba(34,197,94,.10); }
-    .info-cash { color: #fca5a5; border-color: #ef4444; background: rgba(239,68,68,.10); }
-    .info-qrph { color: #67e8f9; border-color: #06b6d4; background: rgba(6,182,212,.10); }
-    .info-sometimes { color: #c4b5fd; border-color: #8b5cf6; background: rgba(139,92,246,.10); }
-    .info-unknown { color: #c4b5fd; border-color: #8b5cf6; background: rgba(139,92,246,.10); }
-    .info-pricey { color: #fcd34d; border-color: #f59e0b; background: rgba(245,158,11,.10); }
-    .info-not-pricey { color: #a7f3d0; border-color: #10b981; background: rgba(16,185,129,.08); }
-    .info-price { color: #f0abfc; border-color: #d946ef; background: rgba(217,70,239,.09); }
-    .info-category { color: #ddd6fe; border-color: #8b5cf6; background: rgba(139,92,246,.10); }
-    .info-type { color: #f9a8d4; border-color: #ec4899; background: rgba(236,72,153,.10); }
-    .rating-btn {
-      min-width: 42px;
-      min-height: 38px;
-      border-radius: 10px;
-      border: 1px solid #332342;
-      background: #100b16;
-      color: #b9a9c8;
-      font-weight: 700;
-    }
-    .rating-btn.active { background: #7c3aed; border-color: #a78bfa; color: white; }
-    .tag { border: 1px solid #392849; background:#17101f; color:#cfc0dc; }
-    .menu-file {
-      display:flex; align-items:center; gap:8px; padding:10px 12px;
-      border-radius:12px; border:1px solid #392849; background:#17101f;
-      color:#ded2ea; font-size:.85rem;
-    }
+    :root { color-scheme: dark; --bg:#09070d; --panel:#120d19; --panel2:#181020; --border:#30213d; --violet:#8b5cf6; --lilac:#c4a7ff; --muted:#9d91aa; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:radial-gradient(circle at 15% 0%,rgba(139,92,246,.20),transparent 30%),radial-gradient(circle at 90% 10%,rgba(196,167,255,.10),transparent 25%),var(--bg); color:#f8f5ff; }
+    .glass { background:rgba(18,13,25,.86); border:1px solid rgba(196,167,255,.14); box-shadow:0 20px 70px rgba(0,0,0,.28); backdrop-filter:blur(18px); }
+    .input { width:100%; min-height:46px; border-radius:12px; border:1px solid var(--border); background:#0d0912; color:#fff; padding:0 13px; outline:none; }
+    .input:focus { border-color:var(--violet); box-shadow:0 0 0 3px rgba(139,92,246,.13); }
+    textarea.input { padding-top:12px; }
+    .btn { min-height:44px; border-radius:12px; padding:0 16px; font-weight:700; transition:.18s ease; display:inline-flex; align-items:center; justify-content:center; }
+    .btn-primary { background:linear-gradient(135deg,#7c3aed,#a78bfa); color:white; }
+    .btn-primary:hover { transform:translateY(-1px); filter:brightness(1.08); }
+    .btn-secondary { background:#191222; border:1px solid #382747; color:#ddd0f0; }
+    .btn-secondary:hover { border-color:#6d4b8d; }
+    .edit-btn { min-height:34px; height:34px; padding:0 10px; border-radius:9px; font-size:.75rem; white-space:nowrap; }
+    .restaurant-actions { display:grid; grid-template-columns:1.15fr 1fr .72fr; align-items:stretch; gap:7px; width:min(100%,390px); margin-bottom:15px; padding-bottom:12px; border-bottom:1px solid rgba(196,167,255,.10); }
+    .restaurant-actions .edit-btn { width:100%; justify-content:center; min-width:0; }
+    .restaurant-header { display:block; }
+    .restaurant-title { color:#ff4fd8; text-shadow:0 0 6px rgba(255,79,216,.55),0 0 16px rgba(255,79,216,.28); font-weight:900; letter-spacing:-.02em; }
+    .restaurant-title:hover { color:#ff7de6; text-shadow:0 0 8px rgba(255,125,230,.65),0 0 20px rgba(255,79,216,.34); }
+    @media (max-width:520px) { .restaurant-actions{width:100%;grid-template-columns:1.15fr 1fr .72fr}.restaurant-actions .edit-btn{font-size:.72rem;padding:0 7px} }
+    .info-badge { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 12px; border-radius:11px; font-size:.78rem; font-weight:800; border:1px solid; box-shadow:inset 0 0 18px rgba(255,255,255,.025); }
+    .info-hours{color:#cbd5e1;border-color:#475569;background:rgba(51,65,85,.22)} .info-card{color:#86efac;border-color:#22c55e;background:rgba(34,197,94,.10)} .info-cash{color:#fca5a5;border-color:#ef4444;background:rgba(239,68,68,.10)} .info-qrph{color:#67e8f9;border-color:#06b6d4;background:rgba(6,182,212,.10)} .info-sometimes,.info-unknown{color:#c4b5fd;border-color:#8b5cf6;background:rgba(139,92,246,.10)} .info-pricey{color:#fcd34d;border-color:#f59e0b;background:rgba(245,158,11,.10)} .info-not-pricey{color:#a7f3d0;border-color:#10b981;background:rgba(16,185,129,.08)} .info-price{color:#f0abfc;border-color:#d946ef;background:rgba(217,70,239,.09)} .info-category{color:#ddd6fe;border-color:#8b5cf6;background:rgba(139,92,246,.10)} .info-type{color:#f9a8d4;border-color:#ec4899;background:rgba(236,72,153,.10)}
+    .rating-btn { min-width:42px; min-height:38px; border-radius:10px; border:1px solid #332342; background:#100b16; color:#b9a9c8; font-weight:700; }
+    .rating-btn.active { background:#7c3aed; border-color:#a78bfa; color:white; }
+    .tag { border:1px solid #392849; background:#17101f; color:#cfc0dc; }
+    .menu-file { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid #392849; background:#17101f; color:#ded2ea; font-size:.85rem; }
+    .menu-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+    .menu-page-card { border:1px solid #392849; background:#120d19; border-radius:16px; overflow:hidden; }
+    .menu-thumb { width:100%; aspect-ratio:4/5; object-fit:contain; background:#08060c; display:block; }
+    .menu-pdf { aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; font-size:3rem; background:linear-gradient(145deg,#110b18,#1b1126); }
     .hidden { display:none !important; }
-    @media (max-width: 700px) {
-      .rating-grid { grid-template-columns: repeat(5, minmax(0,1fr)); }
-    }
+    @media (max-width:700px) { .rating-grid{grid-template-columns:repeat(5,minmax(0,1fr))} }
   </style>
 </head>
 <body>
   <main class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
     <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-7">
-      <div>
-        <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-300 flex items-center justify-center text-xl">🍽️</div>
-          <div>
-            <h1 class="text-2xl sm:text-3xl font-black tracking-tight">Rate them up</h1>
-            <p class="text-sm text-purple-200/60">Personal Restaurant Tracker</p>
-          </div>
-        </div>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-2">
-        <button id="pickBtn" class="btn btn-secondary">🎲 Where Should We Eat?</button>
-        <button id="addBtn" class="btn btn-primary">＋ Add Restaurant</button>
-      </div>
+      <div class="flex items-center gap-3"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-300 flex items-center justify-center text-xl">🍽️</div><div><h1 class="text-2xl sm:text-3xl font-black tracking-tight">Rate them up</h1><p class="text-sm text-purple-200/60">Personal Restaurant Tracker</p></div></div>
+      <div class="flex flex-col sm:flex-row gap-2"><button id="pickBtn" class="btn btn-secondary">🎲 Where Should We Eat?</button><button id="addBtn" class="btn btn-primary">＋ Add Restaurant</button></div>
     </header>
 
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -175,1462 +54,148 @@
       <div class="glass rounded-2xl p-4"><div class="text-xs text-purple-200/55">Card Accepted</div><div id="statCard" class="text-2xl font-black mt-1">0%</div></div>
     </section>
 
-    <section class="glass rounded-2xl p-3 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3">
-        <input id="search" class="input" placeholder="Search restaurant, location, category…" />
-        <select id="sort" class="input md:w-48">
-          <option value="rating">Highest rating</option>
-          <option value="newest">Newest added</option>
-          <option value="name">Name A–Z</option>
-          <option value="experience_desc">Most experiences</option>
-          <option value="experience_asc">Least experiences</option>
-        </select>
-        <button id="filterBtn" type="button" class="btn btn-secondary md:min-w-44">⚙ Filters <span id="filterCount" class="hidden ml-1 rounded-full bg-violet-600 px-2 py-0.5 text-xs">0</span></button>
-      </div>
-    </section>
+    <section class="glass rounded-2xl p-3 mb-6"><div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3"><input id="search" class="input" placeholder="Search restaurant, location, category…" /><select id="sort" class="input md:w-48"><option value="rating">Highest rating</option><option value="newest">Newest added</option><option value="name">Name A–Z</option><option value="experience_desc">Most experiences</option><option value="experience_asc">Least experiences</option></select><button id="filterBtn" type="button" class="btn btn-secondary md:min-w-44">⚙ Filters <span id="filterCount" class="hidden ml-1 rounded-full bg-violet-600 px-2 py-0.5 text-xs">0</span></button></div></section>
 
-    <section id="empty" class="glass rounded-3xl p-10 text-center">
-      <div class="text-5xl mb-4">🍜</div>
-      <h2 class="text-xl font-bold">Your restaurant list is empty</h2>
-      <p class="text-sm text-purple-200/55 mt-2 mb-5">Start recording the restaurants you visit.</p>
-      <button class="btn btn-primary" id="emptyAdd">Add your first restaurant</button>
-    </section>
-
+    <section id="empty" class="glass rounded-3xl p-10 text-center"><div class="text-5xl mb-4">🍜</div><h2 class="text-xl font-bold">Your restaurant list is empty</h2><p class="text-sm text-purple-200/55 mt-2 mb-5">Start recording the restaurants you visit.</p><button class="btn btn-primary" id="emptyAdd">Add your first restaurant</button></section>
     <section id="list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></section>
 
-    <div id="experienceModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
-      <div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7">
-        <div class="flex items-start justify-between gap-4 mb-5">
-          <div><h2 id="experienceModalTitle" class="text-xl font-black">Add Experience</h2><p id="experienceRestaurantName" class="text-sm text-purple-200/55 mt-1"></p></div>
-          <button id="closeExperience" type="button" class="btn btn-secondary">✕</button>
-        </div>
-        <form id="experienceForm" class="space-y-5">
-          <input type="hidden" id="experienceId"><input type="hidden" id="experienceRestaurantId">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label class="block">
-              <span class="text-sm font-semibold">Date visited <span class="text-purple-200/50">(optional)</span></span>
-              <input id="experienceDate" type="date" class="input mt-2">
-              <p class="text-xs text-purple-200/50 mt-2">Leave blank if you don't remember the date.</p>
-            </label>
-            <label class="block"><span class="text-sm font-semibold">Who I went with <span class="text-purple-200/50">(optional)</span></span><input id="experienceCompanion" class="input mt-2" placeholder="Leave blank if alone"></label>
-          </div>
-          <div><div class="text-sm font-semibold mb-2">Your rating <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div><div id="experienceMyRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="experienceMyRatingLabel" class="text-sm text-purple-200/65 mt-2">Not rated</div></div>
-          <div><div class="text-sm font-semibold mb-2">Other person's rating <span class="text-purple-200/50">(optional)</span></div><div id="experiencePartnerRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="experiencePartnerRatingLabel" class="text-sm text-purple-200/65 mt-2">Not rated</div></div>
-          <label class="block"><span class="text-sm font-semibold">What was the experience like?</span><textarea id="experienceNotes" class="input mt-2 min-h-32" placeholder="Food, service, parking, waiting time, atmosphere, what changed since your last visit, etc."></textarea></label>
-          <div id="experienceMessage" class="text-sm text-red-300 hidden"></div>
-          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3"><button type="button" id="cancelExperience" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Save Experience</button></div>
-        </form>
+    <div id="experienceModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto"><div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7"><div class="flex items-start justify-between gap-4 mb-5"><div><h2 id="experienceModalTitle" class="text-xl font-black">Add Experience</h2><p id="experienceRestaurantName" class="text-sm text-purple-200/55 mt-1"></p></div><button id="closeExperience" type="button" class="btn btn-secondary">✕</button></div><form id="experienceForm" class="space-y-5"><input type="hidden" id="experienceId"><input type="hidden" id="experienceRestaurantId"><div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><label class="block"><span class="text-sm font-semibold">Date visited <span class="text-purple-200/50">(optional)</span></span><input id="experienceDate" type="date" class="input mt-2"><p class="text-xs text-purple-200/50 mt-2">Leave blank if you don't remember the date.</p></label><label class="block"><span class="text-sm font-semibold">Who I went with <span class="text-purple-200/50">(optional)</span></span><input id="experienceCompanion" class="input mt-2" placeholder="Leave blank if alone"></label></div><div><div class="text-sm font-semibold mb-2">Your rating <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div><div id="experienceMyRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="experienceMyRatingLabel" class="text-sm text-purple-200/65 mt-2">Not rated</div></div><div><div class="text-sm font-semibold mb-2">Other person's rating <span class="text-purple-200/50">(optional)</span></div><div id="experiencePartnerRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="experiencePartnerRatingLabel" class="text-sm text-purple-200/65 mt-2">Not rated</div></div><label class="block"><span class="text-sm font-semibold">What was the experience like?</span><textarea id="experienceNotes" class="input mt-2 min-h-32" placeholder="Food, service, parking, waiting time, atmosphere, what changed since your last visit, etc."></textarea></label><div id="experienceMessage" class="text-sm text-red-300 hidden"></div><div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3"><button type="button" id="cancelExperience" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Save Experience</button></div></form></div></div>
+
+    <div id="experienceHistoryModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto"><div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7"><div class="flex items-start justify-between gap-4 mb-5"><div><h2 id="historyModalTitle" class="text-xl font-black">Experience History</h2><p class="text-sm text-purple-200/55 mt-1">See how your opinion changed from visit to visit.</p></div><button id="closeExperienceHistory" type="button" class="btn btn-secondary">✕</button></div><div id="experienceHistoryList" class="space-y-3"></div></div></div>
+
+    <div id="pickerModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto"><div class="max-w-lg mx-auto my-10 glass rounded-3xl p-6 sm:p-7"><div class="flex items-start justify-between gap-4 mb-5"><div><h2 class="text-xl font-black">🎲 Where Should We Eat?</h2><p class="text-sm text-purple-200/55 mt-1">Let Rate them up pick a restaurant for you.</p></div><button id="closePicker" class="btn btn-secondary">✕</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+      <label class="block"><span class="text-sm font-semibold">Minimum rating</span><select id="pickMinRating" class="input mt-2"><option value="0">Any rating</option><option value="6">6+</option><option value="7">7+</option><option value="8">8+</option><option value="8.5">8.5+</option><option value="9">9+</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">Price</span><select id="pickPrice" class="input mt-2"><option value="all">Any</option><option value="not_pricey">Not pricey</option><option value="pricey">Pricey only</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">Payment</span><select id="pickPayment" class="input mt-2"><option value="all">Any</option><option value="card">Card accepted</option><option value="cash_only">Cash only</option><option value="qrph">QRPH</option><option value="sometimes">Sometimes</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">🅿️ Parking</span><select id="pickParking" class="input mt-2"><option value="all">Any parking</option><option value="yes">Parking available</option><option value="limited">Parking - Limited</option><option value="paid">Pay parking</option><option value="street">Street parking</option><option value="no">No parking</option><option value="mc_only">MC parking only</option><option value="unknown">Unknown</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">Favorites</span><select id="pickFavorite" class="input mt-2"><option value="all">All restaurants</option><option value="favorite">Favorites only</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">📍 Outside Metro</span><select id="pickTooFar" class="input mt-2"><option value="exclude">Exclude Outside Metro</option><option value="include">Include Outside Metro</option><option value="only">Outside Metro only</option></select></label>
+      </div><label class="flex items-center gap-3 cursor-pointer mb-5"><input id="pickExcludeRecent" type="checkbox" class="w-5 h-5 accent-violet-500" /><span><span class="text-sm font-semibold">Avoid my most recent pick</span><span class="block text-xs text-purple-200/50">Don't suggest the same restaurant twice.</span></span></label><button id="pickRandomBtn" class="btn btn-primary w-full">🎲 Pick For Us</button><div id="pickResult" class="hidden mt-5 rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-950/70 to-purple-900/20 p-5"></div><div id="pickMessage" class="hidden text-sm text-purple-200/65 text-center mt-4"></div></div></div>
+
+    <div id="filterModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto"><div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7"><div class="flex items-start justify-between gap-4 mb-5"><div><h2 class="text-xl font-black">⚙ Restaurant Filters</h2><p class="text-sm text-purple-200/55 mt-1">Narrow down your restaurant list using any combination.</p></div><button id="closeFilter" type="button" class="btn btn-secondary">✕</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <label class="block"><span class="text-sm font-semibold">⭐ Rating</span><select id="filterRating" class="input mt-2"><option value="all">Any rating</option><option value="9">9+</option><option value="8">8+</option><option value="7">7+</option><option value="6">6+</option><option value="below6">Below 6</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">🍴 Category</span><select id="filterCategory" class="input mt-2"><option value="all">All categories</option><option value="Filipino">🇵🇭 Filipino</option><option value="Japanese">🍣 Japanese</option><option value="Korean">🥢 Korean</option><option value="Chinese">🥟 Chinese</option><option value="Thai">🌶️ Thai</option><option value="Vietnamese">🍜 Vietnamese</option><option value="Italian">🍝 Italian</option><option value="American">🍔 American</option><option value="Mexican">🌮 Mexican</option><option value="Indian">🍛 Indian</option><option value="French">🥐 French</option><option value="Spanish">🥘 Spanish</option><option value="Mediterranean">🫒 Mediterranean</option><option value="Seafood">🦐 Seafood</option><option value="Steakhouse">🥩 Steakhouse</option><option value="Dessert">🍰 Dessert</option><option value="Cafe">☕ Cafe</option><option value="Bakery">🥖 Bakery</option><option value="Other">🍽️ Other</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">🏷️ Restaurant Type</span><select id="filterType" class="input mt-2"><option value="all">All types</option><option value="Buffet">🍱 Buffet</option><option value="Fast Food">🍔 Fast Food</option><option value="Casual Dining">🍽️ Casual Dining</option><option value="Fine Dining">🥂 Fine Dining</option><option value="Cafe">☕ Cafe</option><option value="Food Court">🏬 Food Court</option><option value="Food Stall">🛒 Food Stall</option><option value="Bar & Grill">🍖 Bar & Grill</option><option value="Bakery">🥖 Bakery</option><option value="Dessert Shop">🍰 Dessert Shop</option><option value="All-You-Can-Eat">♾️ All-You-Can-Eat</option><option value="Hotpot">🍲 Hotpot</option><option value="Ramen Shop">🍜 Ramen Shop</option><option value="Other">📍 Other</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">💰 Price</span><select id="filterPrice" class="input mt-2"><option value="all">Any price</option><option value="not_pricey">Not pricey</option><option value="pricey">Pricey</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">💳 Payment</span><select id="filterPayment" class="input mt-2"><option value="all">Any payment</option><option value="yes">Card accepted</option><option value="cash_only">No - Cash Only</option><option value="qrph">No - with QRPH</option><option value="sometimes">Sometimes</option><option value="unknown">Unknown</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">🅿️ Parking</span><select id="filterParking" class="input mt-2"><option value="all">Any parking</option><option value="yes">Parking available</option><option value="limited">Parking - Limited</option><option value="paid">Pay parking</option><option value="street">Street parking</option><option value="no">No parking</option><option value="mc_only">MC parking only</option><option value="unknown">Unknown</option></select></label>
+      <label class="block"><span class="text-sm font-semibold">❤️ Favorites</span><select id="filterFavorite" class="input mt-2"><option value="all">All restaurants</option><option value="favorite">Favorites only</option></select></label>
+      <label class="block sm:col-span-2"><span class="text-sm font-semibold">👥 Dining</span><select id="filterDining" class="input mt-2"><option value="all">Everyone</option><option value="alone">Ate alone</option><option value="with">Went with someone</option></select></label>
+      <label class="block sm:col-span-2"><span class="text-sm font-semibold">📖 Experience</span><select id="filterExperience" class="input mt-2"><option value="all">All restaurants</option><option value="has">Has experience</option><option value="none">No experience yet</option></select></label>
+      <label class="block sm:col-span-2"><span class="text-sm font-semibold">📍 Location</span><select id="filterMetro" class="input mt-2"><option value="all">All locations</option><option value="metro">Within the Metro</option><option value="outside">Outside Metro</option></select></label>
+      </div><div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 mt-6"><button id="resetFilters" type="button" class="btn btn-secondary">Reset Filters</button><div class="flex flex-col sm:flex-row gap-3"><button id="cancelFilters" type="button" class="btn btn-secondary">Cancel</button><button id="applyFilters" type="button" class="btn btn-primary">Apply Filters</button></div></div></div></div>
+
+    <div id="modal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto"><div class="max-w-2xl mx-auto my-6 glass rounded-3xl p-5 sm:p-7"><div class="flex items-start justify-between gap-4 mb-5"><div><h2 id="modalTitle" class="text-xl font-black">Add Restaurant</h2><p class="text-sm text-purple-200/55 mt-1">Keep the details simple; you can edit them later.</p></div><button id="closeModal" class="btn btn-secondary">✕</button></div><form id="restaurantForm" class="space-y-5"><input type="hidden" id="editId" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label class="block"><span class="text-sm font-semibold">Restaurant name *</span><input id="name" class="input mt-2" required placeholder="e.g. Cafe Luna" /></label>
+        <label class="block"><span class="text-sm font-semibold">Location</span><input id="location" class="input mt-2" placeholder="City / address" /></label>
+        <label class="block"><span class="text-sm font-semibold">Google Maps link</span><input id="googleMapsUrl" class="input mt-2" type="url" placeholder="Paste Google Maps link" /></label>
+        <label class="block sm:col-span-2"><span class="text-sm font-semibold">Hours</span><input id="hours" type="text" class="input mt-2" placeholder="e.g. 10:00 AM – 10:00 PM, 24 Hours, Closed Mondays" /></label>
+        <label class="block"><span class="text-sm font-semibold">Card payment</span><select id="cardPayment" class="input mt-2"><option value="yes">Yes</option><option value="cash_only">No - Cash Only</option><option value="qrph">No - with QRPH</option><option value="sometimes">Sometimes</option><option value="unknown">Unknown</option></select></label>
+        <label class="block"><span class="text-sm font-semibold">Pricey?</span><select id="pricey" class="input mt-2"><option value="no">No</option><option value="yes">Yes</option></select></label>
+        <label class="block"><span class="text-sm font-semibold">🅿️ Parking</span><select id="parking" class="input mt-2"><option value="unknown">Unknown</option><option value="yes">Yes</option><option value="limited">Yes - Limited</option><option value="paid">Yes - Pay parking</option><option value="street">Yes - Street parking</option><option value="no">No</option><option value="mc_only">Yes - for MC only</option></select></label>
+        <label class="block"><span class="text-sm font-semibold">Average price</span><input id="avgPrice" class="input mt-2" type="text" placeholder="e.g. ₱500 per person" /></label>
+        <label class="block"><span class="text-sm font-semibold">Date visited <span class="text-purple-200/50">(optional)</span></span><input id="visitedDate" type="date" class="input mt-2" /><p class="text-xs text-purple-200/50 mt-2">Leave blank if you don't want to record the visit date.</p></label>
+        <label class="block"><span class="text-sm font-semibold">Restaurant category <span class="text-purple-200/50">(optional for buffet)</span></span><select id="category" class="input mt-2"><option value="">Select category</option><option value="Filipino">🇵🇭 Filipino</option><option value="Japanese">🍣 Japanese</option><option value="Korean">🥢 Korean</option><option value="Chinese">🥟 Chinese</option><option value="Thai">🌶️ Thai</option><option value="Vietnamese">🍜 Vietnamese</option><option value="Italian">🍝 Italian</option><option value="American">🍔 American</option><option value="Mexican">🌮 Mexican</option><option value="Indian">🍛 Indian</option><option value="French">🥐 French</option><option value="Spanish">🥘 Spanish</option><option value="Mediterranean">🫒 Mediterranean</option><option value="Seafood">🦐 Seafood</option><option value="Steakhouse">🥩 Steakhouse</option><option value="Dessert">🍰 Dessert</option><option value="Cafe">☕ Cafe</option><option value="Bakery">🥖 Bakery</option><option value="Other">🍽️ Other</option></select><button type="button" id="addCategoryOptionBtn" class="btn btn-secondary mt-2 w-full text-sm">＋ Add Option</button></label>
+        <label class="block"><span class="text-sm font-semibold">Restaurant type</span><select id="restaurantType" class="input mt-2"><option value="">Select type</option><option value="Buffet">🍱 Buffet</option><option value="Fast Food">🍔 Fast Food</option><option value="Casual Dining">🍽️ Casual Dining</option><option value="Fine Dining">🥂 Fine Dining</option><option value="Cafe">☕ Cafe</option><option value="Food Court">🏬 Food Court</option><option value="Food Stall">🛒 Food Stall</option><option value="Bar & Grill">🍖 Bar & Grill</option><option value="Bakery">🥖 Bakery</option><option value="Dessert Shop">🍰 Dessert Shop</option><option value="All-You-Can-Eat">♾️ All-You-Can-Eat</option><option value="Hotpot">🍲 Hotpot</option><option value="Ramen Shop">🍜 Ramen Shop</option><option value="Other">📍 Other</option></select><button type="button" id="addTypeOptionBtn" class="btn btn-secondary mt-2 w-full text-sm">＋ Add Option</button></label>
       </div>
-    </div>
-    <div id="experienceHistoryModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
-      <div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7">
-        <div class="flex items-start justify-between gap-4 mb-5"><div><h2 id="historyModalTitle" class="text-xl font-black">Experience History</h2><p class="text-sm text-purple-200/55 mt-1">See how your opinion changed from visit to visit.</p></div><button id="closeExperienceHistory" type="button" class="btn btn-secondary">✕</button></div>
-        <div id="experienceHistoryList" class="space-y-3"></div>
-      </div>
-    </div>
+      <div><div class="text-sm font-semibold mb-2">Your rating <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div><div id="myRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="myRatingLabel" class="text-sm text-lilac-200 mt-2 text-purple-200/65">Not rated</div></div>
+      <div><div class="text-sm font-semibold mb-2">Who I went with <span class="text-purple-200/50">(optional)</span></div><input id="companionName" type="text" class="input" placeholder="e.g. Maria, John, Family, Friends" /><p class="text-xs text-purple-200/50 mt-2">Leave this blank if you ate alone. Add a name or group if someone joined you.</p><div id="companionRatingSection" class="hidden mt-4"><div class="text-sm font-semibold mb-2"><span id="companionRatingTitle">Their rating</span> <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div><div id="partnerRating" class="rating-grid grid grid-cols-10 gap-1.5"></div><div id="partnerRatingLabel" class="text-sm text-purple-200/65">Not rated</div></div></div>
 
-    <div id="pickerModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
-      <div class="max-w-lg mx-auto my-10 glass rounded-3xl p-6 sm:p-7">
-        <div class="flex items-start justify-between gap-4 mb-5">
-          <div>
-            <h2 class="text-xl font-black">🎲 Where Should We Eat?</h2>
-            <p class="text-sm text-purple-200/55 mt-1">Let Rate them up pick a restaurant for you.</p>
-          </div>
-          <button id="closePicker" class="btn btn-secondary">✕</button>
-        </div>
+      <div><div class="text-sm font-semibold">Menu</div><p class="text-xs text-purple-200/50 mt-1 mb-3">Optional. Upload one or more menu images/PDFs. Each file can be up to 10 MB.</p><div class="flex flex-col sm:flex-row gap-3"><label class="btn btn-secondary cursor-pointer text-center">📎 <span id="menuButtonText">Add Menu Pages</span><input id="menuFile" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" /></label><button type="button" id="removeMenuBtn" class="btn btn-secondary hidden">Remove All Menus</button></div><div id="menuCurrent" class="mt-3 space-y-2"></div><div id="menuMessage" class="text-sm text-red-300 hidden mt-2"></div></div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <label class="block">
-            <span class="text-sm font-semibold">Minimum rating</span>
-            <select id="pickMinRating" class="input mt-2">
-              <option value="0">Any rating</option>
-              <option value="6">6+</option>
-              <option value="7">7+</option>
-              <option value="8">8+</option>
-              <option value="8.5">8.5+</option>
-              <option value="9">9+</option>
-            </select>
-          </label>
+      <label class="block"><span class="text-sm font-semibold">Notes</span><textarea id="notes" class="input mt-2 min-h-28" placeholder="What did you think?"></textarea></label>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><label class="flex items-center gap-3 cursor-pointer"><input id="favorite" type="checkbox" class="w-5 h-5 accent-violet-500" /><span class="text-sm font-semibold">Add to favorites</span></label><label class="flex items-center gap-3 cursor-pointer"><input id="tooFar" type="checkbox" class="w-5 h-5 accent-violet-500" /><span><span class="text-sm font-semibold">📍 Outside Metro</span><span class="block text-xs text-purple-200/50">Exclude this restaurant from "Where Should We Eat?" by default</span></span></label><label class="flex items-center gap-3 cursor-pointer"><input id="withinMetro" type="checkbox" class="w-5 h-5 accent-violet-500" /><span><span class="text-sm font-semibold">🏙️ Within the Metro</span><span class="block text-xs text-purple-200/50">Mark this restaurant as being within the Metro.</span></span></label></div>
+      <div id="formMessage" class="text-sm text-red-300 hidden"></div><div id="deleteRestaurantRow" class="hidden border-t border-red-400/10 pt-4"><button type="button" id="deleteRestaurantBtn" class="btn w-full sm:w-auto bg-red-950/60 border border-red-500/40 text-red-200 hover:bg-red-900/70 hover:border-red-400">🗑️ Delete Restaurant</button><p class="text-xs text-red-200/50 mt-2">This permanently deletes the restaurant, its experience history, and all attached menu files.</p></div>
+      <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3"><button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Save Restaurant</button></div>
+    </form></div></div>
 
-          <label class="block">
-            <span class="text-sm font-semibold">Price</span>
-            <select id="pickPrice" class="input mt-2">
-              <option value="all">Any</option>
-              <option value="not_pricey">Not pricey</option>
-              <option value="pricey">Pricey only</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">Payment</span>
-            <select id="pickPayment" class="input mt-2">
-              <option value="all">Any</option>
-              <option value="card">Card accepted</option>
-              <option value="cash_only">Cash only</option>
-              <option value="qrph">QRPH</option>
-              <option value="sometimes">Sometimes</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">🅿️ Parking</span>
-            <select id="pickParking" class="input mt-2">
-              <option value="all">Any parking</option>
-              <option value="yes">Parking available</option>
-              <option value="limited">Parking - Limited</option>
-              <option value="paid">Pay parking</option>
-              <option value="street">Street parking</option>
-              <option value="no">No parking</option>
-              <option value="mc_only">MC parking only</option>
-              <option value="unknown">Unknown</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">Favorites</span>
-            <select id="pickFavorite" class="input mt-2">
-              <option value="all">All restaurants</option>
-              <option value="favorite">Favorites only</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">📍 Outside Metro</span>
-            <select id="pickTooFar" class="input mt-2">
-              <option value="exclude">Exclude Outside Metro</option>
-              <option value="include">Include Outside Metro</option>
-              <option value="only">Outside Metro only</option>
-            </select>
-          </label>
-        </div>
-
-        <label class="flex items-center gap-3 cursor-pointer mb-5">
-          <input id="pickExcludeRecent" type="checkbox" class="w-5 h-5 accent-violet-500" />
-          <span>
-            <span class="text-sm font-semibold">Avoid my most recent pick</span>
-            <span class="block text-xs text-purple-200/50">Don't suggest the same restaurant twice.</span>
-          </span>
-        </label>
-
-        <button id="pickRandomBtn" class="btn btn-primary w-full">🎲 Pick For Us</button>
-
-        <div id="pickResult" class="hidden mt-5 rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-950/70 to-purple-900/20 p-5"></div>
-        <div id="pickMessage" class="hidden text-sm text-purple-200/65 text-center mt-4"></div>
-      </div>
-    </div>
-
-    <div id="filterModal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
-      <div class="max-w-2xl mx-auto my-8 glass rounded-3xl p-5 sm:p-7">
-        <div class="flex items-start justify-between gap-4 mb-5">
-          <div>
-            <h2 class="text-xl font-black">⚙ Restaurant Filters</h2>
-            <p class="text-sm text-purple-200/55 mt-1">Narrow down your restaurant list using any combination.</p>
-          </div>
-          <button id="closeFilter" type="button" class="btn btn-secondary">✕</button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label class="block">
-            <span class="text-sm font-semibold">⭐ Rating</span>
-            <select id="filterRating" class="input mt-2">
-              <option value="all">Any rating</option>
-              <option value="9">9+</option>
-              <option value="8">8+</option>
-              <option value="7">7+</option>
-              <option value="6">6+</option>
-              <option value="below6">Below 6</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">🍴 Category</span>
-            <select id="filterCategory" class="input mt-2">
-              <option value="all">All categories</option>
-              <option value="Filipino">🇵🇭 Filipino</option>
-              <option value="Japanese">🍣 Japanese</option>
-              <option value="Korean">🥢 Korean</option>
-              <option value="Chinese">🥟 Chinese</option>
-              <option value="Thai">🌶️ Thai</option>
-              <option value="Vietnamese">🍜 Vietnamese</option>
-              <option value="Italian">🍝 Italian</option>
-              <option value="American">🍔 American</option>
-              <option value="Mexican">🌮 Mexican</option>
-              <option value="Indian">🍛 Indian</option>
-              <option value="French">🥐 French</option>
-              <option value="Spanish">🥘 Spanish</option>
-              <option value="Mediterranean">🫒 Mediterranean</option>
-              <option value="Seafood">🦐 Seafood</option>
-              <option value="Steakhouse">🥩 Steakhouse</option>
-              <option value="Dessert">🍰 Dessert</option>
-              <option value="Cafe">☕ Cafe</option>
-              <option value="Bakery">🥖 Bakery</option>
-              <option value="Other">🍽️ Other</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">🏷️ Restaurant Type</span>
-            <select id="filterType" class="input mt-2">
-              <option value="all">All types</option>
-              <option value="Buffet">🍱 Buffet</option>
-              <option value="Fast Food">🍔 Fast Food</option>
-              <option value="Casual Dining">🍽️ Casual Dining</option>
-              <option value="Fine Dining">🥂 Fine Dining</option>
-              <option value="Cafe">☕ Cafe</option>
-              <option value="Food Court">🏬 Food Court</option>
-              <option value="Food Stall">🛒 Food Stall</option>
-              <option value="Bar & Grill">🍖 Bar & Grill</option>
-              <option value="Bakery">🥖 Bakery</option>
-              <option value="Dessert Shop">🍰 Dessert Shop</option>
-              <option value="All-You-Can-Eat">♾️ All-You-Can-Eat</option>
-              <option value="Hotpot">🍲 Hotpot</option>
-              <option value="Ramen Shop">🍜 Ramen Shop</option>
-              <option value="Other">📍 Other</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">💰 Price</span>
-            <select id="filterPrice" class="input mt-2">
-              <option value="all">Any price</option>
-              <option value="not_pricey">Not pricey</option>
-              <option value="pricey">Pricey</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">💳 Payment</span>
-            <select id="filterPayment" class="input mt-2">
-              <option value="all">Any payment</option>
-              <option value="yes">Card accepted</option>
-              <option value="cash_only">No - Cash Only</option>
-              <option value="qrph">No - with QRPH</option>
-              <option value="sometimes">Sometimes</option>
-              <option value="unknown">Unknown</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">🅿️ Parking</span>
-            <select id="filterParking" class="input mt-2">
-              <option value="all">Any parking</option>
-              <option value="yes">Parking available</option>
-              <option value="limited">Parking - Limited</option>
-              <option value="paid">Pay parking</option>
-              <option value="street">Street parking</option>
-              <option value="no">No parking</option>
-              <option value="mc_only">MC parking only</option>
-              <option value="unknown">Unknown</option>
-            </select>
-          </label>
-
-          <label class="block">
-            <span class="text-sm font-semibold">❤️ Favorites</span>
-            <select id="filterFavorite" class="input mt-2">
-              <option value="all">All restaurants</option>
-              <option value="favorite">Favorites only</option>
-            </select>
-          </label>
-
-          <label class="block sm:col-span-2">
-            <span class="text-sm font-semibold">👥 Dining</span>
-            <select id="filterDining" class="input mt-2">
-              <option value="all">Everyone</option>
-              <option value="alone">Ate alone</option>
-              <option value="with">Went with someone</option>
-            </select>
-          </label>
-
-          <label class="block sm:col-span-2">
-            <span class="text-sm font-semibold">📖 Experience</span>
-            <select id="filterExperience" class="input mt-2">
-              <option value="all">All restaurants</option>
-              <option value="has">Has experience</option>
-              <option value="none">No experience yet</option>
-            </select>
-          </label>
-
-          <label class="block sm:col-span-2">
-            <span class="text-sm font-semibold">📍 Location</span>
-            <select id="filterMetro" class="input mt-2">
-              <option value="all">All locations</option>
-              <option value="metro">Within the Metro</option>
-              <option value="outside">Outside Metro</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 mt-6">
-          <button id="resetFilters" type="button" class="btn btn-secondary">Reset Filters</button>
-          <div class="flex flex-col sm:flex-row gap-3">
-            <button id="cancelFilters" type="button" class="btn btn-secondary">Cancel</button>
-            <button id="applyFilters" type="button" class="btn btn-primary">Apply Filters</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="modal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 overflow-y-auto">
-      <div class="max-w-2xl mx-auto my-6 glass rounded-3xl p-5 sm:p-7">
-        <div class="flex items-start justify-between gap-4 mb-5">
-          <div>
-            <h2 id="modalTitle" class="text-xl font-black">Add Restaurant</h2>
-            <p class="text-sm text-purple-200/55 mt-1">Keep the details simple; you can edit them later.</p>
-          </div>
-          <button id="closeModal" class="btn btn-secondary">✕</button>
-        </div>
-
-        <form id="restaurantForm" class="space-y-5">
-          <input type="hidden" id="editId" />
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label class="block">
-              <span class="text-sm font-semibold">Restaurant name *</span>
-              <input id="name" class="input mt-2" required placeholder="e.g. Cafe Luna" />
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Location</span>
-              <input id="location" class="input mt-2" placeholder="City / address" />
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Google Maps link</span>
-              <input id="googleMapsUrl" class="input mt-2" type="url" placeholder="Paste Google Maps link" />
-            </label>
-            <label class="block sm:col-span-2">
-              <span class="text-sm font-semibold">Hours</span>
-              <input id="hours" type="text" class="input mt-2" placeholder="e.g. 10:00 AM – 10:00 PM, 24 Hours, Closed Mondays" />
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Card payment</span>
-              <select id="cardPayment" class="input mt-2">
-                <option value="yes">Yes</option>
-                <option value="cash_only">No - Cash Only</option>
-                <option value="qrph">No - with QRPH</option>
-                <option value="sometimes">Sometimes</option>
-                <option value="unknown">Unknown</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Pricey?</span>
-              <select id="pricey" class="input mt-2">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">🅿️ Parking</span>
-              <select id="parking" class="input mt-2">
-                <option value="unknown">Unknown</option>
-                <option value="yes">Yes</option>
-                <option value="limited">Yes - Limited</option>
-                <option value="paid">Yes - Pay parking</option>
-                <option value="street">Yes - Street parking</option>
-                <option value="no">No</option>
-                <option value="mc_only">Yes - for MC only</option>
-              </select>
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Average price</span>
-              <input id="avgPrice" class="input mt-2" type="text" placeholder="e.g. ₱500 per person" />
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Date visited <span class="text-purple-200/50">(optional)</span></span>
-              <input id="visitedDate" type="date" class="input mt-2" />
-              <p class="text-xs text-purple-200/50 mt-2">Leave blank if you don't want to record the visit date.</p>
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Restaurant category <span class="text-purple-200/50">(optional for buffet)</span></span>
-              <select id="category" class="input mt-2">
-                <option value="">Select category</option>
-                <option value="Filipino">🇵🇭 Filipino</option>
-                <option value="Japanese">🍣 Japanese</option>
-                <option value="Korean">🥢 Korean</option>
-                <option value="Chinese">🥟 Chinese</option>
-                <option value="Thai">🌶️ Thai</option>
-                <option value="Vietnamese">🍜 Vietnamese</option>
-                <option value="Italian">🍝 Italian</option>
-                <option value="American">🍔 American</option>
-                <option value="Mexican">🌮 Mexican</option>
-                <option value="Indian">🍛 Indian</option>
-                <option value="French">🥐 French</option>
-                <option value="Spanish">🥘 Spanish</option>
-                <option value="Mediterranean">🫒 Mediterranean</option>
-                <option value="Seafood">🦐 Seafood</option>
-                <option value="Steakhouse">🥩 Steakhouse</option>
-                <option value="Dessert">🍰 Dessert</option>
-                <option value="Cafe">☕ Cafe</option>
-                <option value="Bakery">🥖 Bakery</option>
-                <option value="Other">🍽️ Other</option>
-              </select>
-              <button type="button" id="addCategoryOptionBtn" class="btn btn-secondary mt-2 w-full text-sm">＋ Add Option</button>
-            </label>
-            <label class="block">
-              <span class="text-sm font-semibold">Restaurant type</span>
-              <select id="restaurantType" class="input mt-2">
-                <option value="">Select type</option>
-                <option value="Buffet">🍱 Buffet</option>
-                <option value="Fast Food">🍔 Fast Food</option>
-                <option value="Casual Dining">🍽️ Casual Dining</option>
-                <option value="Fine Dining">🥂 Fine Dining</option>
-                <option value="Cafe">☕ Cafe</option>
-                <option value="Food Court">🏬 Food Court</option>
-                <option value="Food Stall">🛒 Food Stall</option>
-                <option value="Bar & Grill">🍖 Bar & Grill</option>
-                <option value="Bakery">🥖 Bakery</option>
-                <option value="Dessert Shop">🍰 Dessert Shop</option>
-                <option value="All-You-Can-Eat">♾️ All-You-Can-Eat</option>
-                <option value="Hotpot">🍲 Hotpot</option>
-                <option value="Ramen Shop">🍜 Ramen Shop</option>
-                <option value="Other">📍 Other</option>
-              </select>
-              <button type="button" id="addTypeOptionBtn" class="btn btn-secondary mt-2 w-full text-sm">＋ Add Option</button>
-            </label>
-          </div>
-
-          <div>
-            <div class="text-sm font-semibold mb-2">Your rating <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div>
-            <div id="myRating" class="rating-grid grid grid-cols-10 gap-1.5"></div>
-            <div id="myRatingLabel" class="text-sm text-lilac-200 mt-2 text-purple-200/65">Not rated</div>
-          </div>
-
-          <div>
-            <div class="text-sm font-semibold mb-2">Who I went with <span class="text-purple-200/50">(optional)</span></div>
-            <input id="companionName" type="text" class="input" placeholder="e.g. Maria, John, Family, Friends" />
-            <p class="text-xs text-purple-200/50 mt-2">Leave this blank if you ate alone. Add a name or group if someone joined you.</p>
-
-            <div id="companionRatingSection" class="hidden mt-4">
-              <div class="text-sm font-semibold mb-2"><span id="companionRatingTitle">Their rating</span> <span class="text-purple-200/50">(1–10, 0.5 increments)</span></div>
-              <div id="partnerRating" class="rating-grid grid grid-cols-10 gap-1.5"></div>
-              <div id="partnerRatingLabel" class="text-sm text-purple-200/65">Not rated</div>
-            </div>
-          </div>
-
-          <div>
-            <div class="text-sm font-semibold">Menu</div>
-            <p class="text-xs text-purple-200/50 mt-1 mb-3">Optional. Upload a PDF or menu image, up to 10 MB.</p>
-            <div class="flex flex-col sm:flex-row gap-3">
-              <label class="btn btn-secondary cursor-pointer text-center">
-                📎 <span id="menuButtonText">Attach Menu</span>
-                <input id="menuFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" />
-              </label>
-              <button type="button" id="removeMenuBtn" class="btn btn-secondary hidden">Remove Menu</button>
-            </div>
-            <div id="menuCurrent" class="mt-3"></div>
-            <div id="menuMessage" class="text-sm text-red-300 hidden mt-2"></div>
-          </div>
-
-          <label class="block">
-            <span class="text-sm font-semibold">Notes</span>
-            <textarea id="notes" class="input mt-2 min-h-28" placeholder="What did you think?"></textarea>
-          </label>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input id="favorite" type="checkbox" class="w-5 h-5 accent-violet-500" />
-              <span class="text-sm font-semibold">Add to favorites</span>
-            </label>
-
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input id="tooFar" type="checkbox" class="w-5 h-5 accent-violet-500" />
-              <span>
-                <span class="text-sm font-semibold">📍 Outside Metro</span>
-                <span class="block text-xs text-purple-200/50">Exclude this restaurant from "Where Should We Eat?" by default</span>
-              </span>
-            </label>
-
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input id="withinMetro" type="checkbox" class="w-5 h-5 accent-violet-500" />
-              <span>
-                <span class="text-sm font-semibold">🏙️ Within the Metro</span>
-                <span class="block text-xs text-purple-200/50">Mark this restaurant as being within the Metro.</span>
-              </span>
-            </label>
-          </div>
-
-          <div id="formMessage" class="text-sm text-red-300 hidden"></div>
-          <div id="deleteRestaurantRow" class="hidden border-t border-red-400/10 pt-4">
-            <button type="button" id="deleteRestaurantBtn" class="btn w-full sm:w-auto bg-red-950/60 border border-red-500/40 text-red-200 hover:bg-red-900/70 hover:border-red-400">🗑️ Delete Restaurant</button>
-            <p class="text-xs text-red-200/50 mt-2">This permanently deletes the restaurant, its experience history, and its attached menu file.</p>
-          </div>
-
-          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-            <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Restaurant</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <div id="menuGalleryModal" class="hidden fixed inset-0 z-[60] bg-black/80 p-4 overflow-y-auto"><div class="max-w-4xl mx-auto my-6 glass rounded-3xl p-5 sm:p-7"><div class="flex items-start justify-between gap-4 mb-5"><div><h2 id="menuGalleryTitle" class="text-xl font-black">Menu</h2><p id="menuGallerySubtitle" class="text-sm text-purple-200/55 mt-1">Browse all uploaded menu pages.</p></div><button id="closeMenuGallery" type="button" class="btn btn-secondary">✕</button></div><div id="menuGalleryContent"></div></div></div>
   </main>
 
 <script>
-  /*
-    SUPABASE SETUP
-    --------------
-    For a static HTML file deployed to Vercel, replace the two placeholders
-    below with your Supabase project's URL and publishable/anon key.
-
-    IMPORTANT:
-    - Never put the Supabase service_role/secret key here.
-    - For a production app with authentication, move credentials to the
-      appropriate Vercel environment variables/server-side configuration.
-  */
   const SUPABASE_URL = "https://bosjigsuxudsaqqaorhi.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_YsQwlmyFBauRTDJtF9aKoA_B-sW9ZDj";
-
   const hasSupabase = !SUPABASE_URL.startsWith("YOUR_") && !SUPABASE_ANON_KEY.startsWith("YOUR_");
   const supabaseClient = hasSupabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-  const state = {
-    restaurants: [],
-    myRating: null,
-    partnerRating: null,
-    lastPickedId: null,
-    experienceMyRating: null,
-    experiencePartnerRating: null,
-    sortPreference: "rating", // persists whichever sort option was last selected
-    experienceRestaurantIds: new Set(),
-    experienceCounts: {},
-    filters: {
-      rating: "all",
-      category: "all",
-      type: "all",
-      price: "all",
-      payment: "all",
-      parking: "all",
-      favorite: "all",
-      dining: "all",
-      experience: "all",
-      metro: "all"
-    }
-  };
+  const state = { restaurants:[], myRating:null, partnerRating:null, lastPickedId:null, experienceMyRating:null, experiencePartnerRating:null, sortPreference:"rating", experienceRestaurantIds:new Set(), experienceCounts:{}, editorMenuFiles:[], pendingMenuFiles:[], filters:{rating:"all",category:"all",type:"all",price:"all",payment:"all",parking:"all",favorite:"all",dining:"all",experience:"all",metro:"all"} };
+  const $ = id => document.getElementById(id);
+  function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  function combined(r){const companion=String(r.companion_name||"").trim(),a=Number(r.my_rating),b=Number(r.partner_rating);if(!companion||!Number.isFinite(a)||!Number.isFinite(b))return null;return Math.round(((a+b)/2)*10)/10;}
+  function ratingButtons(containerId,valueKey,labelId){const el=$(containerId);el.innerHTML="";for(let i=1;i<=20;i++){const value=i/2,b=document.createElement("button");b.type="button";b.className="rating-btn";b.textContent=value%1===0?value.toFixed(0):value.toFixed(1);b.addEventListener("click",()=>{state[valueKey]=value;[...el.children].forEach(x=>x.classList.remove("active"));b.classList.add("active");$(labelId).textContent=value.toFixed(1)+" / 10"});el.appendChild(b)}}
 
-  const $ = (id) => document.getElementById(id);
+  const CUSTOM_OPTIONS_KEY="rate_them_up_custom_options";
+  const defaultCategoryValues=["","Filipino","Japanese","Korean","Chinese","Thai","Vietnamese","Italian","American","Mexican","Indian","French","Spanish","Mediterranean","Seafood","Steakhouse","Dessert","Cafe","Bakery","Other"];
+  const defaultTypeValues=["","Buffet","Fast Food","Casual Dining","Fine Dining","Cafe","Food Court","Food Stall","Bar & Grill","Bakery","Dessert Shop","All-You-Can-Eat","Hotpot","Ramen Shop","Other"];
+  function getCustomOptions(){try{const saved=JSON.parse(localStorage.getItem(CUSTOM_OPTIONS_KEY)||"{}");return{categories:Array.isArray(saved.categories)?saved.categories:[],types:Array.isArray(saved.types)?saved.types:[]}}catch{return{categories:[],types:[]}}}
+  function saveCustomOptions(options){localStorage.setItem(CUSTOM_OPTIONS_KEY,JSON.stringify(options))}
+  function insertCustomOptions(selectId,customValues,defaultValues,icon){const select=$(selectId);if(!select)return;[...select.querySelectorAll("option[data-custom-option='true']")].forEach(o=>o.remove());const otherOption=[...select.options].find(o=>o.value==="Other");customValues.forEach(value=>{if(!value||defaultValues.includes(value))return;const option=document.createElement("option");option.value=value;option.textContent=`${icon} ${value}`;option.dataset.customOption="true";if(otherOption)select.insertBefore(option,otherOption);else select.appendChild(option)})}
+  function refreshCustomOptions(){const custom=getCustomOptions();insertCustomOptions("category",custom.categories,defaultCategoryValues,"🍽️");insertCustomOptions("restaurantType",custom.types,defaultTypeValues,"📍");insertCustomOptions("filterCategory",custom.categories,defaultCategoryValues,"🍽️");insertCustomOptions("filterType",custom.types,defaultTypeValues,"📍")}
+  function addCustomOption(kind){const isCategory=kind==="category",label=isCategory?"category":"restaurant type",input=prompt(`Enter a new ${label}:`);if(input===null)return;const value=input.trim();if(!value)return;const custom=getCustomOptions(),list=isCategory?custom.categories:custom.types,defaults=isCategory?defaultCategoryValues:defaultTypeValues;if([...defaults,...list].some(v=>v.toLowerCase()===value.toLowerCase())){alert(`"${value}" already exists.`);return}list.push(value);saveCustomOptions(custom);refreshCustomOptions();const selectId=isCategory?"category":"restaurantType";$(selectId).value=value;if(isCategory)updateCategoryForType()}
+  function updateCategoryForType(){const type=$("restaurantType").value,category=$("category"),isBuffet=type==="Buffet"||type==="All-You-Can-Eat";if(isBuffet){category.value="";category.disabled=true;category.title="Category is optional for buffet-style restaurants."}else{category.disabled=false;category.title=""}}
 
-  function esc(value) {
-    return String(value ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-  }
+  async function openModal(item=null){$("modal").classList.remove("hidden");$("modalTitle").textContent=item?"Edit Restaurant":"Add Restaurant";$("editId").value=item?.id||"";$("deleteRestaurantRow").classList.toggle("hidden",!item);$("name").value=item?.name||"";$("location").value=item?.location||"";$("googleMapsUrl").value=item?.google_maps_url||"";$("hours").value=item?.hours||"";$("cardPayment").value=item?.card_payment||"yes";$("pricey").value=item?.pricey||"no";$("parking").value=item?.parking||"unknown";$("avgPrice").value=item?.avg_price||"";$("visitedDate").value=item?.visited_date||"";refreshCustomOptions();$("category").value=item?.category||"";$("restaurantType").value=item?.restaurant_type||"";updateCategoryForType();$("notes").value=item?.notes||"";$("favorite").checked=!!item?.is_favorite;$("tooFar").checked=!!item?.too_far;$("withinMetro").checked=!!item?.within_metro;$("companionName").value=item?.companion_name||"";$("companionRatingSection").classList.toggle("hidden",!$("companionName").value.trim());$("companionRatingTitle").textContent=$("companionName").value.trim()?`${$("companionName").value.trim()}'s rating`:"Their rating";state.pendingMenuFiles=[];state.editorMenuFiles=[];$("menuFile").value="";$("menuButtonText").textContent="Add Menu Pages";$("removeMenuBtn").classList.add("hidden");$("menuMessage").classList.add("hidden");$("menuCurrent").innerHTML=item?'<div class="text-sm text-purple-200/50">Loading menu pages…</div>':"";state.myRating=item?.my_rating==null?null:Number(item.my_rating);state.partnerRating=item?.partner_rating==null?null:Number(item.partner_rating);ratingButtons("myRating","myRating","myRatingLabel");ratingButtons("partnerRating","partnerRating","partnerRatingLabel");[...$("myRating").children].forEach(b=>{if(Number(b.textContent)===state.myRating)b.classList.add("active")});[...$("partnerRating").children].forEach(b=>{if(Number(b.textContent)===state.partnerRating)b.classList.add("active")});$("myRatingLabel").textContent=state.myRating==null?"Not rated":state.myRating.toFixed(1)+" / 10";$("partnerRatingLabel").textContent=state.partnerRating==null?"Not rated":state.partnerRating.toFixed(1)+" / 10";$("formMessage").classList.add("hidden");if(item?.id)await loadEditorMenuFiles(item.id);else renderMenuEditor()}
+  function closeModal(){$("modal").classList.add("hidden");state.pendingMenuFiles=[];state.editorMenuFiles=[]}
 
-  function combined(r) {
-    const companion = String(r.companion_name || "").trim();
-    const a = Number(r.my_rating);
-    const b = Number(r.partner_rating);
-
-    // Only calculate a combined score when a companion was entered
-    // and both ratings are present.
-    if (!companion || !Number.isFinite(a) || !Number.isFinite(b)) return null;
-
-    return Math.round(((a + b) / 2) * 10) / 10;
-  }
-
-  function ratingButtons(containerId, valueKey, labelId) {
-    const el = $(containerId);
-    el.innerHTML = "";
-    for (let i = 1; i <= 20; i++) {
-      const value = i / 2;
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "rating-btn";
-      b.textContent = value % 1 === 0 ? value.toFixed(0) : value.toFixed(1);
-      b.addEventListener("click", () => {
-        state[valueKey] = value;
-        [...el.children].forEach(x => x.classList.remove("active"));
-        b.classList.add("active");
-        $(labelId).textContent = value.toFixed(1) + " / 10";
-      });
-      el.appendChild(b);
-    }
-  }
-
-  const CUSTOM_OPTIONS_KEY = "rate_them_up_custom_options";
-
-  const defaultCategoryValues = [
-    "", "Filipino", "Japanese", "Korean", "Chinese", "Thai", "Vietnamese",
-    "Italian", "American", "Mexican", "Indian", "French", "Spanish",
-    "Mediterranean", "Seafood", "Steakhouse", "Dessert", "Cafe", "Bakery", "Other"
-  ];
-
-  const defaultTypeValues = [
-    "", "Buffet", "Fast Food", "Casual Dining", "Fine Dining", "Cafe",
-    "Food Court", "Food Stall", "Bar & Grill", "Bakery", "Dessert Shop",
-    "All-You-Can-Eat", "Hotpot", "Ramen Shop", "Other"
-  ];
-
-  function getCustomOptions() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(CUSTOM_OPTIONS_KEY) || "{}");
-      return {
-        categories: Array.isArray(saved.categories) ? saved.categories : [],
-        types: Array.isArray(saved.types) ? saved.types : []
-      };
-    } catch {
-      return { categories: [], types: [] };
-    }
-  }
-
-  function saveCustomOptions(options) {
-    localStorage.setItem(CUSTOM_OPTIONS_KEY, JSON.stringify(options));
-  }
-
-  function insertCustomOptions(selectId, customValues, defaultValues, icon) {
-    const select = $(selectId);
-    if (!select) return;
-
-    [...select.querySelectorAll("option[data-custom-option='true']")].forEach(o => o.remove());
-
-    const otherOption = [...select.options].find(o => o.value === "Other");
-    customValues.forEach(value => {
-      if (!value || defaultValues.includes(value)) return;
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = `${icon} ${value}`;
-      option.dataset.customOption = "true";
-      if (otherOption) select.insertBefore(option, otherOption);
-      else select.appendChild(option);
-    });
-  }
-
-  function refreshCustomOptions() {
-    const custom = getCustomOptions();
-    insertCustomOptions("category", custom.categories, defaultCategoryValues, "🍽️");
-    insertCustomOptions("restaurantType", custom.types, defaultTypeValues, "📍");
-    insertCustomOptions("filterCategory", custom.categories, defaultCategoryValues, "🍽️");
-    insertCustomOptions("filterType", custom.types, defaultTypeValues, "📍");
-  }
-
-  function addCustomOption(kind) {
-    const isCategory = kind === "category";
-    const label = isCategory ? "category" : "restaurant type";
-    const input = prompt(`Enter a new ${label}:`);
-    if (input === null) return;
-
-    const value = input.trim();
-    if (!value) return;
-
-    const custom = getCustomOptions();
-    const list = isCategory ? custom.categories : custom.types;
-    const defaults = isCategory ? defaultCategoryValues : defaultTypeValues;
-
-    if ([...defaults, ...list].some(v => v.toLowerCase() === value.toLowerCase())) {
-      alert(`"${value}" already exists.`);
-      return;
-    }
-
-    list.push(value);
-    saveCustomOptions(custom);
-    refreshCustomOptions();
-
-    const selectId = isCategory ? "category" : "restaurantType";
-    $(selectId).value = value;
-    if (isCategory) updateCategoryForType();
-  }
-
-  function updateCategoryForType() {
-    const type = $("restaurantType").value;
-    const category = $("category");
-    const isBuffet = type === "Buffet" || type === "All-You-Can-Eat";
-
-    if (isBuffet) {
-      category.value = "";
-      category.disabled = true;
-      category.title = "Category is optional for buffet-style restaurants.";
-    } else {
-      category.disabled = false;
-      category.title = "";
-    }
-  }
-
-  function openModal(item = null) {
-    $("modal").classList.remove("hidden");
-    $("modalTitle").textContent = item ? "Edit Restaurant" : "Add Restaurant";
-    $("editId").value = item?.id || "";
-    $("deleteRestaurantRow").classList.toggle("hidden", !item);
-    $("name").value = item?.name || "";
-    $("location").value = item?.location || "";
-    $("googleMapsUrl").value = item?.google_maps_url || "";
-    $("hours").value = item?.hours || "";
-    $("cardPayment").value = item?.card_payment || "yes";
-    $("pricey").value = item?.pricey || "no";
-    $("parking").value = item?.parking || "unknown";
-    $("avgPrice").value = item?.avg_price || "";
-    $("visitedDate").value = item?.visited_date || "";
-    refreshCustomOptions();
-    $("category").value = item?.category || "";
-    $("restaurantType").value = item?.restaurant_type || "";
-    updateCategoryForType();
-    $("notes").value = item?.notes || "";
-    $("favorite").checked = !!item?.is_favorite;
-    $("tooFar").checked = !!item?.too_far;
-    $("withinMetro").checked = !!item?.within_metro;
-    $("companionName").value = item?.companion_name || "";
-    $("companionRatingSection").classList.toggle("hidden", !$("companionName").value.trim());
-    $("companionRatingTitle").textContent = $("companionName").value.trim() ? `${$("companionName").value.trim()}'s rating` : "Their rating";
-    $("menuFile").value = "";
-    $("menuButtonText").textContent = item?.menu_file_name ? "Replace Menu" : "Attach Menu";
-    $("removeMenuBtn").classList.toggle("hidden", !item?.menu_file_path);
-    renderCurrentMenu(item?.menu_file_name, item?.menu_file_path);
-    state.myRating = item?.my_rating == null ? null : Number(item.my_rating);
-    state.partnerRating = item?.partner_rating == null ? null : Number(item.partner_rating);
-    ratingButtons("myRating","myRating","myRatingLabel");
-    ratingButtons("partnerRating","partnerRating","partnerRatingLabel");
-    [...$("myRating").children].forEach(b => { if (Number(b.textContent) === state.myRating) b.classList.add("active"); });
-    [...$("partnerRating").children].forEach(b => { if (Number(b.textContent) === state.partnerRating) b.classList.add("active"); });
-    $("myRatingLabel").textContent = state.myRating == null ? "Not rated" : state.myRating.toFixed(1) + " / 10";
-    $("partnerRatingLabel").textContent = state.partnerRating == null ? "Not rated" : state.partnerRating.toFixed(1) + " / 10";
-    $("formMessage").classList.add("hidden");
-  }
-
-  function closeModal() { $("modal").classList.add("hidden"); }
-
-  function render() {
-    const q = $("search").value.trim().toLowerCase();
-    const sort = $("sort").value;
-
-    let rows = state.restaurants.filter(r => {
-      const matchesSearch = !q || `${r.name} ${r.location || ""} ${r.category || ""} ${r.restaurant_type || ""}`.toLowerCase().includes(q);
-      const my = Number(r.my_rating);
-      const other = Number(r.partner_rating);
-      const companion = String(r.companion_name || "").trim();
-      const rating = companion && Number.isFinite(my) && Number.isFinite(other)
-        ? (my + other) / 2
-        : my;
-
-      const f = state.filters;
-      const matchesRating =
-        f.rating === "all" ||
-        (f.rating === "below6" && Number.isFinite(rating) && rating < 6) ||
-        (f.rating !== "below6" && Number.isFinite(rating) && rating >= Number(f.rating));
-
-      const matchesCategory = f.category === "all" || r.category === f.category;
-      const matchesType = f.type === "all" || r.restaurant_type === f.type;
-      const matchesPrice =
-        f.price === "all" ||
-        (f.price === "pricey" && r.pricey === "yes") ||
-        (f.price === "not_pricey" && r.pricey === "no");
-      const matchesPayment = f.payment === "all" || r.card_payment === f.payment;
-      const matchesParking = f.parking === "all" || r.parking === f.parking;
-      const matchesFavorite = f.favorite === "all" || (f.favorite === "favorite" && r.is_favorite);
-      const matchesDining =
-        f.dining === "all" ||
-        (f.dining === "alone" && !companion) ||
-        (f.dining === "with" && !!companion);
-
-      const hasExperience = state.experienceRestaurantIds.has(String(r.id));
-      const matchesExperience =
-        f.experience === "all" ||
-        (f.experience === "has" && hasExperience) ||
-        (f.experience === "none" && !hasExperience);
-
-      const matchesMetro =
-        f.metro === "all" ||
-        (f.metro === "metro" && !!r.within_metro) ||
-        (f.metro === "outside" && !!r.too_far);
-
-      // Keep the legacy filter value unused; all filtering now happens in the
-      // dedicated filter panel.
-      return matchesSearch && matchesRating && matchesCategory && matchesType &&
-        matchesPrice && matchesPayment && matchesParking && matchesFavorite &&
-        matchesDining && matchesExperience && matchesMetro;
-    });
-
-    rows.sort((a,b) => {
-      if (sort === "name") return a.name.localeCompare(b.name);
-      if (sort === "newest") return String(b.created_at || "").localeCompare(String(a.created_at || ""));
-      if (sort === "experience_desc") return (state.experienceCounts?.[String(b.id)] || 0) - (state.experienceCounts?.[String(a.id)] || 0);
-      if (sort === "experience_asc") return (state.experienceCounts?.[String(a.id)] || 0) - (state.experienceCounts?.[String(b.id)] || 0);
-      return (combined(b) ?? -1) - (combined(a) ?? -1);
-    });
-
-    $("empty").classList.toggle("hidden", state.restaurants.length !== 0);
-    $("list").innerHTML = rows.map(r => {
-      const together = combined(r);
-      const cardText =
-        r.card_payment === "yes" ? "💳 Card accepted" :
-        r.card_payment === "cash_only" ? "💵 Cash only" :
-        r.card_payment === "qrph" ? "📱 QRPH" :
-        r.card_payment === "sometimes" ? "💳 Sometimes" :
-        "💳 Payment unknown";
-      const hours = r.hours ? `🕐 ${r.hours}` : "";
-      return `
-        <article class="glass rounded-3xl p-5">
-          <div class="restaurant-header">
-            <div class="restaurant-actions">
-              <button class="btn btn-secondary edit-btn" onclick="openExperienceModal('${esc(r.id)}')">＋ Experience</button>
-              <button class="btn btn-secondary edit-btn" onclick="viewExperiences('${esc(r.id)}')">📖 History</button>
-              <button class="btn btn-secondary edit-btn" onclick="editRestaurant('${esc(r.id)}')">✎ Edit</button>
-            </div>
-            <div class="min-w-0">
-              <div class="flex gap-2 items-center flex-wrap">
-                <h3 class="restaurant-title font-black text-xl sm:text-2xl truncate">${esc(r.name)}</h3>
-                ${r.is_favorite ? '<span class="tag rounded-full px-2 py-1 text-xs">♥ Favorite</span>' : ''}
-              </div>
-              ${r.location ? `<p class="text-sm text-purple-200/55 mt-1">📍 ${esc(r.location)}</p>` : ''}
-              ${r.google_maps_url ? `<a href="${esc(r.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-purple-300 hover:text-white">🗺️ Open in Google Maps ↗</a>` : ''}
-              ${r.companion_name ? `<p class="text-sm text-purple-200/55 mt-2">👥 With ${esc(r.companion_name)}</p>` : `<p class="text-sm text-purple-200/45 mt-2">🍽️ Ate alone</p>`}
-            </div>
-          </div>
-
-          <div class="flex flex-wrap gap-2 mt-4 text-xs">
-            ${hours ? `<span class="info-badge info-hours">${hours}</span>` : ''}
-            <span class="info-badge ${
-              r.card_payment === "yes" ? "info-card" :
-              r.card_payment === "cash_only" ? "info-cash" :
-              r.card_payment === "qrph" ? "info-qrph" :
-              r.card_payment === "sometimes" ? "info-sometimes" :
-              "info-unknown"
-            }">${cardText}</span>
-            <span class="info-badge ${r.pricey === "yes" ? "info-pricey" : "info-not-pricey"}">${r.pricey === "yes" ? "💸 Pricey" : "💰 Not pricey"}</span>
-            ${r.parking === "yes" ? `<span class="info-badge info-card">🅿️ Parking</span>` :
-              r.parking === "limited" ? `<span class="info-badge info-pricey">🅿️ Limited Parking</span>` :
-              r.parking === "paid" ? `<span class="info-badge info-sometimes">💳 Pay Parking</span>` :
-              r.parking === "street" ? `<span class="info-badge info-category">🛣️ Street Parking</span>` :
-              r.parking === "no" ? `<span class="info-badge info-cash">🅿️ No Parking</span>` :
-              r.parking === "mc_only" ? `<span class="info-badge info-sometimes">🏍️ MC Parking Only</span>` :
-              r.parking === "unknown" ? `<span class="info-badge info-unknown">🅿️ Parking Unknown</span>` : ""}
-            ${r.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>` : ""}
-            ${r.category ? `<span class="info-badge info-category">🍴 ${esc(r.category)}</span>` : ""}
-            ${r.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(r.restaurant_type)}</span>` : ""}
-            ${r.too_far ? `<span class="info-badge info-cash">📍 Outside Metro</span>` : ""}
-            ${r.within_metro ? `<span class="info-badge info-category">🏙️ Within the Metro</span>` : ""}
-            ${r.menu_file_path ? `<a class="info-badge info-unknown hover:brightness-125" href="${esc(publicMenuUrl(r.menu_file_path) || "#")}" target="_blank" rel="noopener noreferrer">📎 View Menu</a>` : ""}
-          </div>
-
-          <div class="grid grid-cols-3 gap-2 mt-5">
-            <div class="rounded-2xl bg-black/20 border border-purple-300/10 p-3">
-              <div class="text-xs text-purple-200/50">You</div>
-              <div class="font-black text-xl mt-1">${r.my_rating != null ? Number(r.my_rating).toFixed(1) : "—"}</div>
-            </div>
-            <div class="rounded-2xl bg-black/20 border border-purple-300/10 p-3">
-              <div class="text-xs text-purple-200/50">${r.companion_name ? esc(r.companion_name) : "Went alone"}</div>
-              <div class="font-black text-xl mt-1">${r.partner_rating != null ? Number(r.partner_rating).toFixed(1) : "N/A"}</div>
-            </div>
-            <div class="rounded-2xl bg-gradient-to-br from-violet-950/80 to-purple-900/30 border border-violet-400/20 p-3">
-              <div class="text-xs text-purple-200/60">${r.companion_name && r.partner_rating != null ? "Combined" : "Your score"}</div>
-              <div class="font-black text-xl mt-1 text-purple-200">${
-                r.companion_name && r.partner_rating != null
-                  ? together.toFixed(1)
-                  : (r.my_rating != null ? Number(r.my_rating).toFixed(1) : "—")
-              }</div>
-            </div>
-          </div>
-
-          ${r.notes ? `<p class="text-sm text-purple-100/70 mt-4 leading-6">“${esc(r.notes)}”</p>` : ''}
-        </article>`;
-    }).join("");
-
-    $("statTotal").textContent = state.restaurants.length;
-    $("statFav").textContent = state.restaurants.filter(r => r.is_favorite).length;
-    const rated = state.restaurants.map(combined).filter(v => v != null);
-    $("statAvg").textContent = rated.length ? (rated.reduce((a,b)=>a+b,0)/rated.length).toFixed(1) : "—";
-    const cardCount = state.restaurants.filter(r => r.card_payment === "yes").length;
-    $("statCard").textContent = state.restaurants.length ? Math.round(cardCount/state.restaurants.length*100) + "%" : "0%";
-  }
+  function render(){const q=$("search").value.trim().toLowerCase(),sort=$("sort").value;let rows=state.restaurants.filter(r=>{const matchesSearch=!q||`${r.name} ${r.location||""} ${r.category||""} ${r.restaurant_type||""}`.toLowerCase().includes(q);const my=Number(r.my_rating),other=Number(r.partner_rating),companion=String(r.companion_name||"").trim(),rating=companion&&Number.isFinite(my)&&Number.isFinite(other)?(my+other)/2:my,f=state.filters;const matchesRating=f.rating==="all"||(f.rating==="below6"&&Number.isFinite(rating)&&rating<6)||(f.rating!=="below6"&&Number.isFinite(rating)&&rating>=Number(f.rating));const matchesCategory=f.category==="all"||r.category===f.category,matchesType=f.type==="all"||r.restaurant_type===f.type,matchesPrice=f.price==="all"||(f.price==="pricey"&&r.pricey==="yes")||(f.price==="not_pricey"&&r.pricey==="no"),matchesPayment=f.payment==="all"||r.card_payment===f.payment,matchesParking=f.parking==="all"||r.parking===f.parking,matchesFavorite=f.favorite==="all"||(f.favorite==="favorite"&&r.is_favorite),matchesDining=f.dining==="all"||(f.dining==="alone"&&!companion)||(f.dining==="with"&&!!companion),hasExperience=state.experienceRestaurantIds.has(String(r.id)),matchesExperience=f.experience==="all"||(f.experience==="has"&&hasExperience)||(f.experience==="none"&&!hasExperience),matchesMetro=f.metro==="all"||(f.metro==="metro"&&!!r.within_metro)||(f.metro==="outside"&&!!r.too_far);return matchesSearch&&matchesRating&&matchesCategory&&matchesType&&matchesPrice&&matchesPayment&&matchesParking&&matchesFavorite&&matchesDining&&matchesExperience&&matchesMetro});rows.sort((a,b)=>{if(sort==="name")return a.name.localeCompare(b.name);if(sort==="newest")return String(b.created_at||"").localeCompare(String(a.created_at||""));if(sort==="experience_desc")return(state.experienceCounts?.[String(b.id)]||0)-(state.experienceCounts?.[String(a.id)]||0);if(sort==="experience_asc")return(state.experienceCounts?.[String(a.id)]||0)-(state.experienceCounts?.[String(b.id)]||0);return(combined(b)??-1)-(combined(a)??-1)});$("empty").classList.toggle("hidden",state.restaurants.length!==0);$("list").innerHTML=rows.map(r=>{const together=combined(r),cardText=r.card_payment==="yes"?"💳 Card accepted":r.card_payment==="cash_only"?"💵 Cash only":r.card_payment==="qrph"?"📱 QRPH":r.card_payment==="sometimes"?"💳 Sometimes":"💳 Payment unknown",hours=r.hours?`🕐 ${r.hours}`:"";return `<article class="glass rounded-3xl p-5"><div class="restaurant-header"><div class="restaurant-actions"><button class="btn btn-secondary edit-btn" onclick="openExperienceModal('${esc(r.id)}')">＋ Experience</button><button class="btn btn-secondary edit-btn" onclick="viewExperiences('${esc(r.id)}')">📖 History</button><button class="btn btn-secondary edit-btn" onclick="editRestaurant('${esc(r.id)}')">✎ Edit</button></div><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h3 class="restaurant-title font-black text-xl sm:text-2xl truncate">${esc(r.name)}</h3>${r.is_favorite?'<span class="tag rounded-full px-2 py-1 text-xs">♥ Favorite</span>':''}</div>${r.location?`<p class="text-sm text-purple-200/55 mt-1">📍 ${esc(r.location)}</p>`:''}${r.google_maps_url?`<a href="${esc(r.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-purple-300 hover:text-white">🗺️ Open in Google Maps ↗</a>`:''}${r.companion_name?`<p class="text-sm text-purple-200/55 mt-2">👥 With ${esc(r.companion_name)}</p>`:`<p class="text-sm text-purple-200/45 mt-2">🍽️ Ate alone</p>`}</div></div><div class="flex flex-wrap gap-2 mt-4 text-xs">${hours?`<span class="info-badge info-hours">${hours}</span>`:''}<span class="info-badge ${r.card_payment==="yes"?"info-card":r.card_payment==="cash_only"?"info-cash":r.card_payment==="qrph"?"info-qrph":r.card_payment==="sometimes"?"info-sometimes":"info-unknown"}">${cardText}</span><span class="info-badge ${r.pricey==="yes"?"info-pricey":"info-not-pricey"}">${r.pricey==="yes"?"💸 Pricey":"💰 Not pricey"}</span>${r.parking==="yes"?`<span class="info-badge info-card">🅿️ Parking</span>`:r.parking==="limited"?`<span class="info-badge info-pricey">🅿️ Limited Parking</span>`:r.parking==="paid"?`<span class="info-badge info-sometimes">💳 Pay Parking</span>`:r.parking==="street"?`<span class="info-badge info-category">🛣️ Street Parking</span>`:r.parking==="no"?`<span class="info-badge info-cash">🅿️ No Parking</span>`:r.parking==="mc_only"?`<span class="info-badge info-sometimes">🏍️ MC Parking Only</span>`:r.parking==="unknown"?`<span class="info-badge info-unknown">🅿️ Parking Unknown</span>`:""}${r.avg_price?`<span class="info-badge info-price">💵 Avg. ${esc(r.avg_price)}</span>`:""}${r.category?`<span class="info-badge info-category">🍴 ${esc(r.category)}</span>`:""}${r.restaurant_type?`<span class="info-badge info-type">🏷️ ${esc(r.restaurant_type)}</span>`:""}${r.too_far?`<span class="info-badge info-cash">📍 Outside Metro</span>`:""}${r.within_metro?`<span class="info-badge info-category">🏙️ Within the Metro</span>`:""}${r.menu_file_path?`<button type="button" class="info-badge info-unknown hover:brightness-125" onclick="openMenuGallery('${esc(r.id)}')">📚 View Menu</button>`:""}</div><div class="grid grid-cols-3 gap-2 mt-5"><div class="rounded-2xl bg-black/20 border border-purple-300/10 p-3"><div class="text-xs text-purple-200/50">You</div><div class="font-black text-xl mt-1">${r.my_rating!=null?Number(r.my_rating).toFixed(1):"—"}</div></div><div class="rounded-2xl bg-black/20 border border-purple-300/10 p-3"><div class="text-xs text-purple-200/50">${r.companion_name?esc(r.companion_name):"Went alone"}</div><div class="font-black text-xl mt-1">${r.partner_rating!=null?Number(r.partner_rating).toFixed(1):"N/A"}</div></div><div class="rounded-2xl bg-gradient-to-br from-violet-950/80 to-purple-900/30 border border-violet-400/20 p-3"><div class="text-xs text-purple-200/60">${r.companion_name&&r.partner_rating!=null?"Combined":"Your score"}</div><div class="font-black text-xl mt-1 text-purple-200">${r.companion_name&&r.partner_rating!=null?together.toFixed(1):(r.my_rating!=null?Number(r.my_rating).toFixed(1):"—")}</div></div></div>${r.notes?`<p class="text-sm text-purple-100/70 mt-4 leading-6">“${esc(r.notes)}”</p>`:''}</article>`}).join("");$("statTotal").textContent=state.restaurants.length;$("statFav").textContent=state.restaurants.filter(r=>r.is_favorite).length;const rated=state.restaurants.map(combined).filter(v=>v!=null);$("statAvg").textContent=rated.length?(rated.reduce((a,b)=>a+b,0)/rated.length).toFixed(1):"—";const cardCount=state.restaurants.filter(r=>r.card_payment==="yes").length;$("statCard").textContent=state.restaurants.length?Math.round(cardCount/state.restaurants.length*100)+"%":"0%"}
 
   function experienceRatingButtons(id,key,label){const el=$(id);el.innerHTML="";for(let i=1;i<=20;i++){const v=i/2,b=document.createElement("button");b.type="button";b.className="rating-btn";b.textContent=v%1===0?v.toFixed(0):v.toFixed(1);b.onclick=()=>{state[key]=v;[...el.children].forEach(x=>x.classList.toggle("active",Number(x.textContent)===v));$(label).textContent=v.toFixed(1)+" / 10"};el.appendChild(b)}}
   function openExperienceModal(rid,e=null){const r=state.restaurants.find(x=>String(x.id)===String(rid));if(!r)return;$("experienceModal").classList.remove("hidden");$("experienceModalTitle").textContent=e?"Edit Experience":"Add Experience";$("experienceRestaurantName").textContent=r.name;$("experienceId").value=e?.id||"";$("experienceRestaurantId").value=r.id;$("experienceDate").value=e?.visited_date||"";$("experienceCompanion").value=e?.companion_name||"";$("experienceNotes").value=e?.notes||"";state.experienceMyRating=e?.my_rating==null?null:Number(e.my_rating);state.experiencePartnerRating=e?.partner_rating==null?null:Number(e.partner_rating);experienceRatingButtons("experienceMyRating","experienceMyRating","experienceMyRatingLabel");experienceRatingButtons("experiencePartnerRating","experiencePartnerRating","experiencePartnerRatingLabel");[...$("experienceMyRating").children].forEach(b=>b.classList.toggle("active",Number(b.textContent)===state.experienceMyRating));[...$("experiencePartnerRating").children].forEach(b=>b.classList.toggle("active",Number(b.textContent)===state.experiencePartnerRating));$("experienceMyRatingLabel").textContent=state.experienceMyRating==null?"Not rated":state.experienceMyRating.toFixed(1)+" / 10";$("experiencePartnerRatingLabel").textContent=state.experiencePartnerRating==null?"Not rated":state.experiencePartnerRating.toFixed(1)+" / 10";$("experienceMessage").classList.add("hidden")}
   function closeExperienceModal(){$("experienceModal").classList.add("hidden")}
   async function viewExperiences(rid){const r=state.restaurants.find(x=>String(x.id)===String(rid));if(!r)return;$("historyModalTitle").textContent=r.name+" — Experience History";$("experienceHistoryModal").classList.remove("hidden");const box=$("experienceHistoryList");box.innerHTML='<div class="text-sm text-purple-200/60 text-center py-6">Loading experiences…</div>';let data=[];if(supabaseClient){const q=await supabaseClient.from("restaurant_experiences").select("*").eq("restaurant_id",rid).order("visited_date",{ascending:false});if(q.error){box.innerHTML='<div class="text-sm text-red-300">'+esc(q.error.message)+'</div>';return}data=q.data||[]}else{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");data=(all[rid]||[]).sort((a,b)=>String(b.visited_date||"").localeCompare(String(a.visited_date||"")))}if(!data.length){box.innerHTML='<div class="rounded-2xl border border-purple-300/10 bg-black/20 p-6 text-center"><div class="text-3xl mb-2">🍽️</div><div class="font-bold">No experiences recorded yet</div><div class="text-sm text-purple-200/50 mt-1">Add the first experience from your next visit.</div></div>';return}box.innerHTML=data.map((e,i)=>{const my=e.my_rating!=null?Number(e.my_rating).toFixed(1):"—",p=e.partner_rating!=null?Number(e.partner_rating).toFixed(1):"—",score=e.my_rating!=null&&e.partner_rating!=null?((Number(e.my_rating)+Number(e.partner_rating))/2).toFixed(1):my;return `<article class="rounded-2xl border border-purple-300/10 bg-black/20 p-4"><div class="flex justify-between gap-3"><div><div class="inline-flex items-center rounded-lg border border-violet-400/30 bg-violet-950/60 px-2.5 py-1 text-xs uppercase tracking-wider text-purple-200 font-black shadow-sm">Visit ${data.length-i}</div><div class="text-sm font-semibold text-purple-100/75 mt-2">${esc(e.visited_date||"Date not recorded")}</div><div class="text-xs text-purple-200/50 mt-1">${e.companion_name?`👥 With ${esc(e.companion_name)}`:"🍽️ Ate alone"}</div></div><button class="edit-btn btn btn-secondary" onclick="editExperience('${esc(e.id)}','${esc(rid)}')">✎ Edit</button></div><div class="grid grid-cols-3 gap-2 mt-4"><div class="rounded-xl bg-black/20 border border-purple-300/10 p-3"><div class="text-xs text-purple-200/50">You</div><div class="font-black text-lg mt-1">${my}</div></div><div class="rounded-xl bg-black/20 border border-purple-300/10 p-3"><div class="text-xs text-purple-200/50">Other</div><div class="font-black text-lg mt-1">${p}</div></div><div class="rounded-xl bg-violet-950/50 border border-violet-400/20 p-3"><div class="text-xs text-purple-200/60">Score</div><div class="font-black text-lg mt-1 text-purple-200">${score}</div></div></div>${e.notes?`<p class="text-sm text-purple-100/70 mt-4 leading-6">“${esc(e.notes)}”</p>`:""}</article>`}).join("")}
-  async function editExperience(eid,rid){if(!supabaseClient){const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");const e=(all[rid]||[]).find(x=>String(x.id)===String(eid));if(e)openExperienceModal(rid,e);return}const q=await supabaseClient.from("restaurant_experiences").select("*").eq("id",eid).single();if(q.error){alert(q.error.message);return}openExperienceModal(rid,q.data)}
+  async function editExperience(eid,rid){if(!supabaseClient){const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}"),e=(all[rid]||[]).find(x=>String(x.id)===String(eid));if(e)openExperienceModal(rid,e);return}const q=await supabaseClient.from("restaurant_experiences").select("*").eq("id",eid).single();if(q.error){alert(q.error.message);return}openExperienceModal(rid,q.data)}
   function closeExperienceHistory(){$("experienceHistoryModal").classList.add("hidden")}
   window.openExperienceModal=openExperienceModal;window.viewExperiences=viewExperiences;window.editExperience=editExperience;window.closeExperienceHistory=closeExperienceHistory;
 
-  function getActiveFilterCount() {
-    return Object.values(state.filters).filter(v => v !== "all").length;
-  }
-
-  function syncFilterControls() {
-    $("filterRating").value = state.filters.rating;
-    $("filterCategory").value = state.filters.category;
-    $("filterType").value = state.filters.type;
-    $("filterPrice").value = state.filters.price;
-    $("filterPayment").value = state.filters.payment;
-    $("filterParking").value = state.filters.parking;
-    $("filterFavorite").value = state.filters.favorite;
-    $("filterDining").value = state.filters.dining;
-    $("filterExperience").value = state.filters.experience;
-    $("filterMetro").value = state.filters.metro;
-
-    const count = getActiveFilterCount();
-    $("filterCount").textContent = count;
-    $("filterCount").classList.toggle("hidden", count === 0);
-  }
-
-  function openFilterModal() {
-    syncFilterControls();
-    $("filterModal").classList.remove("hidden");
-  }
-
-  function closeFilterModal() {
-    $("filterModal").classList.add("hidden");
-  }
-
-  function applyFilters() {
-    state.filters = {
-      rating: $("filterRating").value,
-      category: $("filterCategory").value,
-      type: $("filterType").value,
-      price: $("filterPrice").value,
-      payment: $("filterPayment").value,
-      parking: $("filterParking").value,
-      favorite: $("filterFavorite").value,
-      dining: $("filterDining").value,
-      experience: $("filterExperience").value,
-      metro: $("filterMetro").value
-    };
-    syncFilterControls();
-    closeFilterModal();
-    render();
-  }
-
-  function resetFilters() {
-    state.filters = {
-      rating: "all",
-      category: "all",
-      type: "all",
-      price: "all",
-      payment: "all",
-      parking: "all",
-      favorite: "all",
-      dining: "all",
-      experience: "all",
-      metro: "all"
-    };
-    syncFilterControls();
-    render();
-  }
-
-  function openPicker() {
-    $("pickerModal").classList.remove("hidden");
-    $("pickResult").classList.add("hidden");
-    $("pickMessage").classList.add("hidden");
-  }
-
-  function closePicker() {
-    $("pickerModal").classList.add("hidden");
-  }
-
-  function pickRestaurant() {
-    const minRating = Number($("pickMinRating").value);
-    const price = $("pickPrice").value;
-    const payment = $("pickPayment").value;
-    const parking = $("pickParking").value;
-    const favorite = $("pickFavorite").value;
-    const excludeRecent = $("pickExcludeRecent").checked;
-
-    const paymentValues = {
-      card: "yes",
-      cash_only: "cash_only",
-      qrph: "qrph",
-      sometimes: "sometimes"
-    };
-
-    const candidates = state.restaurants.filter(r => {
-      const my = Number(r.my_rating);
-      const other = Number(r.partner_rating);
-      const companion = String(r.companion_name || "").trim();
-
-      // Solo restaurant = user's rating.
-      // Restaurant with a named companion = combined rating when both ratings exist.
-      const rating = companion && Number.isFinite(my) && Number.isFinite(other)
-        ? (my + other) / 2
-        : my;
-
-      if (!Number.isFinite(rating) || rating < minRating) return false;
-      if (price === "not_pricey" && r.pricey !== "no") return false;
-      if (price === "pricey" && r.pricey !== "yes") return false;
-      if (payment !== "all" && r.card_payment !== paymentValues[payment]) return false;
-      if (parking !== "all" && r.parking !== parking) return false;
-      if (favorite === "favorite" && !r.is_favorite) return false;
-
-      // Outside Metro restaurants are excluded by default, but the picker can
-      // explicitly include them or show only too-far restaurants.
-      const tooFarMode = $("pickTooFar").value;
-      if (tooFarMode === "exclude" && r.too_far) return false;
-      if (tooFarMode === "only" && !r.too_far) return false;
-
-      if (excludeRecent && state.lastPickedId != null && String(r.id) === String(state.lastPickedId)) return false;
-
-      return true;
-    });
-
-    const result = $("pickResult");
-    const message = $("pickMessage");
-
-    if (!candidates.length) {
-      result.classList.add("hidden");
-      message.textContent = "No restaurants match those filters. Try relaxing one of them.";
-      message.classList.remove("hidden");
-      return;
-    }
-
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    state.lastPickedId = chosen.id;
-
-    const my = Number(chosen.my_rating);
-    const other = Number(chosen.partner_rating);
-    const companion = String(chosen.companion_name || "").trim();
-    const hasCombined = companion && Number.isFinite(my) && Number.isFinite(other);
-    const rating = hasCombined
-      ? ((my + other) / 2).toFixed(1)
-      : (Number.isFinite(my) ? my.toFixed(1) : "—");
-
-    const paymentBadge =
-      chosen.card_payment === "yes" ? '<span class="info-badge info-card">💳 Card accepted</span>' :
-      chosen.card_payment === "cash_only" ? '<span class="info-badge info-cash">💵 Cash only</span>' :
-      chosen.card_payment === "qrph" ? '<span class="info-badge info-qrph">📱 QRPH</span>' :
-      chosen.card_payment === "sometimes" ? '<span class="info-badge info-sometimes">💳 Sometimes</span>' :
-      "";
-
-    result.innerHTML = `
-      <div class="text-xs uppercase tracking-widest text-purple-300/60 font-bold">Tonight's pick</div>
-      <div class="text-2xl sm:text-3xl font-black mt-2">${esc(chosen.name)}</div>
-      ${chosen.location ? `<div class="text-sm text-purple-200/60 mt-1">📍 ${esc(chosen.location)}</div>` : ""}
-      <div class="flex flex-wrap gap-2 mt-4">
-        <span class="info-badge info-price">⭐ ${rating}</span>
-        ${chosen.pricey === "yes"
-          ? '<span class="info-badge info-pricey">💸 Pricey</span>'
-          : '<span class="info-badge info-not-pricey">💰 Not pricey</span>'}
-        ${chosen.avg_price ? `<span class="info-badge info-price">💵 Avg. ${esc(chosen.avg_price)}</span>` : ""}
-        ${chosen.parking === "yes" ? '<span class="info-badge info-card">🅿️ Parking</span>' :
-          chosen.parking === "limited" ? '<span class="info-badge info-pricey">🅿️ Limited Parking</span>' :
-          chosen.parking === "paid" ? '<span class="info-badge info-sometimes">💳 Pay Parking</span>' :
-          chosen.parking === "street" ? '<span class="info-badge info-category">🛣️ Street Parking</span>' :
-          chosen.parking === "no" ? '<span class="info-badge info-cash">🅿️ No Parking</span>' :
-          chosen.parking === "mc_only" ? '<span class="info-badge info-sometimes">🏍️ MC Parking Only</span>' :
-          chosen.parking === "unknown" ? '<span class="info-badge info-unknown">🅿️ Parking Unknown</span>' : ""}
-        ${chosen.category ? `<span class="info-badge info-category">🍴 ${esc(chosen.category)}</span>` : ""}
-        ${chosen.restaurant_type ? `<span class="info-badge info-type">🏷️ ${esc(chosen.restaurant_type)}</span>` : ""}
-        ${chosen.too_far ? `<span class="info-badge info-cash">📍 Outside Metro</span>` : ""}
-        ${chosen.within_metro ? `<span class="info-badge info-category">🏙️ Within the Metro</span>` : ""}
-        ${paymentBadge}
-      </div>
-      ${chosen.hours ? `<div class="text-sm text-purple-200/60 mt-4">🕐 ${esc(chosen.hours)}</div>` : ""}
-      <div class="flex flex-col sm:flex-row gap-2 mt-5">
-        ${chosen.google_maps_url
-          ? `<a href="${esc(chosen.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary text-center">🗺️ Open in Google Maps</a>`
-          : ""}
-        <button type="button" class="btn btn-secondary" onclick="editRestaurant('${esc(chosen.id)}'); closePicker();">✎ View / Edit</button>
-      </div>
-    `;
-
-    message.classList.add("hidden");
-    result.classList.remove("hidden");
-  }
-
-  window.editRestaurant = (id) => {
-    const item = state.restaurants.find(r => String(r.id) === String(id));
-    if (item) openModal(item);
-  };
-
-  function publicMenuUrl(path) {
-    if (!path || !supabaseClient) return null;
-    return supabaseClient.storage.from("restaurant-menus").getPublicUrl(path).data.publicUrl;
-  }
-
-  function renderCurrentMenu(fileName, filePath) {
-    const box = $("menuCurrent");
-    if (!filePath) {
-      box.innerHTML = "";
-      return;
-    }
-    const url = publicMenuUrl(filePath);
-    const isPdf = /\.pdf$/i.test(fileName || filePath);
-    box.innerHTML = `
-      <div class="menu-file">
-        <span>${isPdf ? "📄" : "🖼️"}</span>
-        <span class="min-w-0 flex-1 truncate">${esc(fileName || "Menu")}</span>
-        <a href="${esc(url || "#")}" target="_blank" rel="noopener noreferrer"
-           class="font-bold text-purple-300 hover:text-white">View</a>
-      </div>`;
-  }
-
-  async function uploadMenu(file, restaurantId) {
-    if (!supabaseClient) return null;
-    if (!file) return null;
-    if (file.size > 10 * 1024 * 1024) throw new Error("Menu file must be 10 MB or smaller.");
-    const allowed = ["image/jpeg","image/png","image/webp","application/pdf"];
-    if (!allowed.includes(file.type)) throw new Error("Menu must be a PDF, JPG, PNG, or WebP file.");
-
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const path = `${restaurantId}/${Date.now()}-${safeName}`;
-
-    const { error } = await supabaseClient.storage
-      .from("restaurant-menus")
-      .upload(path, file, { upsert: false, contentType: file.type });
-
-    if (error) throw error;
-    return { name: file.name, path };
-  }
-
-  async function deleteMenu(path) {
-    if (!supabaseClient || !path) return;
-    const { error } = await supabaseClient.storage.from("restaurant-menus").remove([path]);
-    if (error) throw error;
-  }
-
-  $("menuFile").addEventListener("change", () => {
-    const file = $("menuFile").files[0];
-    $("menuMessage").classList.add("hidden");
-    if (file) {
-      $("menuButtonText").textContent = file.name;
-    }
-  });
-
-  $("removeMenuBtn").addEventListener("click", async () => {
-    const id = $("editId").value;
-    const item = state.restaurants.find(r => String(r.id) === String(id));
-    if (!item?.menu_file_path) return;
-
-    try {
-      await deleteMenu(item.menu_file_path);
-      if (supabaseClient) {
-        const { error } = await supabaseClient.from("restaurants")
-          .update({ menu_file_name: null, menu_file_path: null, updated_at: new Date().toISOString() })
-          .eq("id", id);
-        if (error) throw error;
-      } else {
-        item.menu_file_name = null;
-        item.menu_file_path = null;
-        localStorage.setItem("restaurant_tracker_demo", JSON.stringify(state.restaurants));
-      }
-      $("removeMenuBtn").classList.add("hidden");
-      $("menuButtonText").textContent = "Attach Menu";
-      renderCurrentMenu(null, null);
-      await loadRestaurants();
-    } catch (err) {
-      $("menuMessage").textContent = err?.message || "Unable to remove menu.";
-      $("menuMessage").classList.remove("hidden");
-    }
-  });
-
-  async function loadSortPreference() {
-    // The saved value can be "rating", "newest", or "name" —
-    // whichever sort option was last selected.
-    const fallback = localStorage.getItem("restaurant_sort_preference") || "rating";
-
-    if (!supabaseClient) {
-      state.sortPreference = fallback;
-      $("sort").value = state.sortPreference;
-      return;
-    }
-
-    const { data, error } = await supabaseClient
-      .from("app_settings")
-      .select("sort_preference")
-      .eq("id", 1)
-      .maybeSingle();
-
-    if (error) {
-      console.warn("Could not load saved sort preference. Using the local/default preference.", error);
-      state.sortPreference = fallback;
-    } else {
-      state.sortPreference = data?.sort_preference || fallback;
-    }
-
-    // Start the page on the last selected option.
-    $("sort").value = state.sortPreference;
-  }
-
-  async function saveSortPreference(value) {
-    // Save exactly the option the user just selected.
-    state.sortPreference = value;
-    localStorage.setItem("restaurant_sort_preference", value);
-
-    if (!supabaseClient) return;
-
-    const { error } = await supabaseClient
-      .from("app_settings")
-      .upsert({
-        id: 1,
-        sort_preference: value,
-        updated_at: new Date().toISOString()
-      }, { onConflict: "id" });
-
-    if (error) {
-      console.warn("Could not save sort preference to Supabase.", error);
-    }
-  }
-
-  function localLoad() {
-    try {
-      const data = JSON.parse(localStorage.getItem("restaurant_tracker_demo") || "[]");
-      state.restaurants = Array.isArray(data) ? data : [];
-    } catch { state.restaurants = []; }
-    render();
-  }
-
-  async function loadExperienceIndex() {
-    const ids = new Set();
-    const counts = {};
-
-    if (!supabaseClient) {
-      try {
-        const all = JSON.parse(localStorage.getItem("restaurant_experiences_demo") || "{}");
-        Object.entries(all).forEach(([id, experiences]) => {
-          if (Array.isArray(experiences) && experiences.length) {
-            ids.add(String(id));
-            counts[String(id)] = experiences.length;
-          }
-        });
-      } catch {}
-      state.experienceRestaurantIds = ids;
-      state.experienceCounts = counts;
-      return;
-    }
-
-    const { data, error } = await supabaseClient
-      .from("restaurant_experiences")
-      .select("restaurant_id");
-
-    if (error) {
-      console.warn("Could not load experience data.", error);
-      state.experienceRestaurantIds = ids;
-      state.experienceCounts = counts;
-      return;
-    }
-
-    (data || []).forEach(row => {
-      if (!row.restaurant_id) return;
-      const id = String(row.restaurant_id);
-      ids.add(id);
-      counts[id] = (counts[id] || 0) + 1;
-    });
-
-    state.experienceRestaurantIds = ids;
-    state.experienceCounts = counts;
-  }
-
-  async function loadRestaurants() {
-    await loadSortPreference();
-
-    if (!supabaseClient) {
-      localLoad();
-      await loadExperienceIndex();
-      render();
-      return;
-    }
-    const { data, error } = await supabaseClient.from("restaurants").select("*").order("created_at", {ascending:false});
-    if (error) {
-      console.error(error);
-      $("empty").classList.add("hidden");
-      state.restaurants = [];
-      render();
-      alert("Supabase could not load the restaurants. Check your URL/key and database table.");
-      return;
-    }
-    state.restaurants = data || [];
-    await loadExperienceIndex();
-    render();
-  }
-
-  async function saveRestaurant(payload, editId, menuFile) {
-    if (!supabaseClient) {
-      if (editId) {
-        state.restaurants = state.restaurants.map(r => String(r.id) === String(editId) ? {...r, ...payload, updated_at:new Date().toISOString()} : r);
-      } else {
-        state.restaurants.unshift({id: crypto.randomUUID(), ...payload, created_at:new Date().toISOString()});
-      }
-      localStorage.setItem("restaurant_tracker_demo", JSON.stringify(state.restaurants));
-      render();
-      return;
-    }
-
-    let result;
-    if (editId) {
-      result = await supabaseClient.from("restaurants").update(payload).eq("id", editId).select().single();
-    } else {
-      result = await supabaseClient.from("restaurants").insert(payload).select().single();
-    }
-    if (result.error) throw result.error;
-
-    const saved = result.data;
-    if (menuFile) {
-      const uploaded = await uploadMenu(menuFile, saved.id);
-      const { error: menuError } = await supabaseClient.from("restaurants")
-        .update({
-          menu_file_name: uploaded.name,
-          menu_file_path: uploaded.path,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", saved.id);
-      if (menuError) {
-        try { await deleteMenu(uploaded.path); } catch {}
-        throw menuError;
-      }
-    }
-
-    await loadRestaurants();
-  }
-
-  async function deleteRestaurant(rid) {
-    const item = state.restaurants.find(r => String(r.id) === String(rid));
-    if (!item) return;
-
-    const confirmed = confirm(
-      `Delete "${item.name}"${item.location ? ` (${item.location})` : ""}?\n\n` +
-      "This will permanently delete the restaurant, all of its Experience/History records, and its attached menu file. This cannot be undone."
-    );
-    if (!confirmed) return;
-
-    const button = $("deleteRestaurantBtn");
-    button.disabled = true;
-    button.textContent = "Deleting…";
-
-    try {
-      if (!supabaseClient) {
-        state.restaurants = state.restaurants.filter(r => String(r.id) !== String(rid));
-
-        try {
-          const all = JSON.parse(localStorage.getItem("restaurant_experiences_demo") || "{}");
-          delete all[rid];
-          localStorage.setItem("restaurant_experiences_demo", JSON.stringify(all));
-        } catch {}
-
-        localStorage.setItem("restaurant_tracker_demo", JSON.stringify(state.restaurants));
-      } else {
-        // Delete Experience/History records first.
-        const experienceDelete = await supabaseClient
-          .from("restaurant_experiences")
-          .delete()
-          .eq("restaurant_id", rid);
-        if (experienceDelete.error) throw experienceDelete.error;
-
-        // Delete the attached menu from Storage, if one exists.
-        if (item.menu_file_path) {
-          try {
-            await deleteMenu(item.menu_file_path);
-          } catch (menuErr) {
-            console.warn("Could not delete the menu file from Storage. Continuing with restaurant deletion.", menuErr);
-          }
-        }
-
-        // Finally delete the restaurant itself.
-        const restaurantDelete = await supabaseClient
-          .from("restaurants")
-          .delete()
-          .eq("id", rid);
-        if (restaurantDelete.error) throw restaurantDelete.error;
-      }
-
-      state.lastPickedId = String(state.lastPickedId) === String(rid) ? null : state.lastPickedId;
-      await loadExperienceIndex();
-      closeModal();
-      await loadRestaurants();
-    } catch (err) {
-      console.error(err);
-      alert(err?.message || "Unable to delete restaurant.");
-      button.disabled = false;
-      button.textContent = "🗑️ Delete Restaurant";
-    }
-  }
-
-  $("restaurantForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const message = $("formMessage");
-    message.classList.add("hidden");
-
-    const payload = {
-      name: $("name").value.trim(),
-      location: $("location").value.trim() || null,
-      google_maps_url: $("googleMapsUrl").value.trim() || null,
-      hours: $("hours").value.trim() || null,
-      card_payment: $("cardPayment").value,
-      pricey: $("pricey").value,
-      parking: $("parking").value,
-      avg_price: $("avgPrice").value.trim() || null,
-      category: $("category").value || null,
-      restaurant_type: $("restaurantType").value || null,
-      my_rating: state.myRating,
-      companion_name: $("companionName").value.trim() || null,
-      partner_rating: $("companionName").value.trim() ? state.partnerRating : null,
-      notes: $("notes").value.trim() || null,
-      visited_date: $("visitedDate").value || null,
-      is_favorite: $("favorite").checked,
-      too_far: $("tooFar").checked,
-      within_metro: $("withinMetro").checked,
-      updated_at: new Date().toISOString()
-    };
-
-    const menuFile = $("menuFile").files[0] || null;
-
-    if (!payload.name) {
-      message.textContent = "Restaurant name is required.";
-      message.classList.remove("hidden");
-      return;
-    }
-
-    if (payload.google_maps_url) {
-      try {
-        const parsed = new URL(payload.google_maps_url);
-        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
-      } catch {
-        message.textContent = "Please enter a valid Google Maps link.";
-        message.classList.remove("hidden");
-        return;
-      }
-    }
-
-    if (payload.companion_name && payload.partner_rating == null) {
-      message.textContent = "Please select a rating for the person/group you went with, or clear the name field.";
-      message.classList.remove("hidden");
-      return;
-    }
-
-    try {
-      await saveRestaurant(payload, $("editId").value || null, menuFile);
-      closeModal();
-    } catch (err) {
-      console.error(err);
-      message.textContent = err?.message || "Unable to save restaurant.";
-      message.classList.remove("hidden");
-    }
-  });
-
-  $("deleteRestaurantBtn").addEventListener("click", async () => {
-    const id = $("editId").value;
-    if (id) await deleteRestaurant(id);
-  });
-
-  $("addBtn").addEventListener("click", () => openModal());
-  $("emptyAdd").addEventListener("click", () => openModal());
-  $("pickBtn").addEventListener("click", openPicker);
-  $("closePicker").addEventListener("click", closePicker);
-  $("pickRandomBtn").addEventListener("click", pickRestaurant);
-  $("closeModal").addEventListener("click", closeModal);
-  $("cancelBtn").addEventListener("click", closeModal);
-  $("restaurantType").addEventListener("change", updateCategoryForType);
-
-  $("companionName").addEventListener("input", () => {
-    const name = $("companionName").value.trim();
-    $("companionRatingSection").classList.toggle("hidden", !name);
-    $("companionRatingTitle").textContent = name ? `${name}'s rating` : "Their rating";
-    if (!name) {
-      state.partnerRating = null;
-      [...$("partnerRating").children].forEach(b => b.classList.remove("active"));
-      $("partnerRatingLabel").textContent = "Not rated";
-    }
-  });
-
+  function getActiveFilterCount(){return Object.values(state.filters).filter(v=>v!=="all").length}
+  function syncFilterControls(){$("filterRating").value=state.filters.rating;$("filterCategory").value=state.filters.category;$("filterType").value=state.filters.type;$("filterPrice").value=state.filters.price;$("filterPayment").value=state.filters.payment;$("filterParking").value=state.filters.parking;$("filterFavorite").value=state.filters.favorite;$("filterDining").value=state.filters.dining;$("filterExperience").value=state.filters.experience;$("filterMetro").value=state.filters.metro;const count=getActiveFilterCount();$("filterCount").textContent=count;$("filterCount").classList.toggle("hidden",count===0)}
+  function openFilterModal(){syncFilterControls();$("filterModal").classList.remove("hidden")}
+  function closeFilterModal(){$("filterModal").classList.add("hidden")}
+  function applyFilters(){state.filters={rating:$("filterRating").value,category:$("filterCategory").value,type:$("filterType").value,price:$("filterPrice").value,payment:$("filterPayment").value,parking:$("filterParking").value,favorite:$("filterFavorite").value,dining:$("filterDining").value,experience:$("filterExperience").value,metro:$("filterMetro").value};syncFilterControls();closeFilterModal();render()}
+  function resetFilters(){state.filters={rating:"all",category:"all",type:"all",price:"all",payment:"all",parking:"all",favorite:"all",dining:"all",experience:"all",metro:"all"};syncFilterControls();render()}
+
+  function openPicker(){$("pickerModal").classList.remove("hidden");$("pickResult").classList.add("hidden");$("pickMessage").classList.add("hidden")}
+  function closePicker(){$("pickerModal").classList.add("hidden")}
+  function pickRestaurant(){const minRating=Number($("pickMinRating").value),price=$("pickPrice").value,payment=$("pickPayment").value,parking=$("pickParking").value,favorite=$("pickFavorite").value,excludeRecent=$("pickExcludeRecent").checked,paymentValues={card:"yes",cash_only:"cash_only",qrph:"qrph",sometimes:"sometimes"},candidates=state.restaurants.filter(r=>{const my=Number(r.my_rating),other=Number(r.partner_rating),companion=String(r.companion_name||"").trim(),rating=companion&&Number.isFinite(my)&&Number.isFinite(other)?(my+other)/2:my;if(!Number.isFinite(rating)||rating<minRating)return false;if(price==="not_pricey"&&r.pricey!=="no")return false;if(price==="pricey"&&r.pricey!=="yes")return false;if(payment!=="all"&&r.card_payment!==paymentValues[payment])return false;if(parking!=="all"&&r.parking!==parking)return false;if(favorite==="favorite"&&!r.is_favorite)return false;const tooFarMode=$("pickTooFar").value;if(tooFarMode==="exclude"&&r.too_far)return false;if(tooFarMode==="only"&&!r.too_far)return false;if(excludeRecent&&state.lastPickedId!=null&&String(r.id)===String(state.lastPickedId))return false;return true}),result=$("pickResult"),message=$("pickMessage");if(!candidates.length){result.classList.add("hidden");message.textContent="No restaurants match those filters. Try relaxing one of them.";message.classList.remove("hidden");return}const chosen=candidates[Math.floor(Math.random()*candidates.length)];state.lastPickedId=chosen.id;const my=Number(chosen.my_rating),other=Number(chosen.partner_rating),companion=String(chosen.companion_name||"").trim(),hasCombined=companion&&Number.isFinite(my)&&Number.isFinite(other),rating=hasCombined?((my+other)/2).toFixed(1):(Number.isFinite(my)?my.toFixed(1):"—"),paymentBadge=chosen.card_payment==="yes"?'<span class="info-badge info-card">💳 Card accepted</span>':chosen.card_payment==="cash_only"?'<span class="info-badge info-cash">💵 Cash only</span>':chosen.card_payment==="qrph"?'<span class="info-badge info-qrph">📱 QRPH</span>':chosen.card_payment==="sometimes"?'<span class="info-badge info-sometimes">💳 Sometimes</span>':"";result.innerHTML=`<div class="text-xs uppercase tracking-widest text-purple-300/60 font-bold">Tonight's pick</div><div class="text-2xl sm:text-3xl font-black mt-2">${esc(chosen.name)}</div>${chosen.location?`<div class="text-sm text-purple-200/60 mt-1">📍 ${esc(chosen.location)}</div>`:""}<div class="flex flex-wrap gap-2 mt-4"><span class="info-badge info-price">⭐ ${rating}</span>${chosen.pricey==="yes"?'<span class="info-badge info-pricey">💸 Pricey</span>':'<span class="info-badge info-not-pricey">💰 Not pricey</span>'}${chosen.avg_price?`<span class="info-badge info-price">💵 Avg. ${esc(chosen.avg_price)}</span>`:""}${chosen.parking==="yes"?'<span class="info-badge info-card">🅿️ Parking</span>':chosen.parking==="limited"?'<span class="info-badge info-pricey">🅿️ Limited Parking</span>':chosen.parking==="paid"?'<span class="info-badge info-sometimes">💳 Pay Parking</span>':chosen.parking==="street"?'<span class="info-badge info-category">🛣️ Street Parking</span>':chosen.parking==="no"?'<span class="info-badge info-cash">🅿️ No Parking</span>':chosen.parking==="mc_only"?'<span class="info-badge info-sometimes">🏍️ MC Parking Only</span>':chosen.parking==="unknown"?'<span class="info-badge info-unknown">🅿️ Parking Unknown</span>':""}${chosen.category?`<span class="info-badge info-category">🍴 ${esc(chosen.category)}</span>`:""}${chosen.restaurant_type?`<span class="info-badge info-type">🏷️ ${esc(chosen.restaurant_type)}</span>`:""}${chosen.too_far?`<span class="info-badge info-cash">📍 Outside Metro</span>`:""}${chosen.within_metro?`<span class="info-badge info-category">🏙️ Within the Metro</span>`:""}${paymentBadge}</div>${chosen.hours?`<div class="text-sm text-purple-200/60 mt-4">🕐 ${esc(chosen.hours)}</div>`:""}<div class="flex flex-col sm:flex-row gap-2 mt-5">${chosen.google_maps_url?`<a href="${esc(chosen.google_maps_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary text-center">🗺️ Open in Google Maps</a>`:""}<button type="button" class="btn btn-secondary" onclick="editRestaurant('${esc(chosen.id)}'); closePicker();">✎ View / Edit</button></div>`;message.classList.add("hidden");result.classList.remove("hidden")}
+  window.editRestaurant=id=>{const item=state.restaurants.find(r=>String(r.id)===String(id));if(item)openModal(item)};
+
+  function publicMenuUrl(path){if(!path||!supabaseClient)return null;return supabaseClient.storage.from("restaurant-menus").getPublicUrl(path).data.publicUrl}
+  function cleanStoredMenuName(name){return String(name||"Menu").replace(/^\d+-\d+-/,"").replace(/^\d+-/,"")}
+  function isPdfMenu(file){return /\.pdf$/i.test(file?.name||file?.path||"")}
+  async function listMenuFiles(restaurantId){if(!supabaseClient||!restaurantId)return[];const{data,error}=await supabaseClient.storage.from("restaurant-menus").list(String(restaurantId),{limit:100,sortBy:{column:"name",order:"asc"}});if(error)throw error;return(data||[]).filter(x=>x?.name&&x.name!==".emptyFolderPlaceholder").map(x=>({name:cleanStoredMenuName(x.name),storageName:x.name,path:`${restaurantId}/${x.name}`}))}
+  async function syncMenuPointer(restaurantId,files){if(!supabaseClient)return;const first=files?.[0]||null;const{error}=await supabaseClient.from("restaurants").update({menu_file_name:first?.name||null,menu_file_path:first?.path||null,updated_at:new Date().toISOString()}).eq("id",restaurantId);if(error)throw error;const item=state.restaurants.find(r=>String(r.id)===String(restaurantId));if(item){item.menu_file_name=first?.name||null;item.menu_file_path=first?.path||null}}
+  function renderMenuEditor(){const existing=state.editorMenuFiles||[],pending=state.pendingMenuFiles||[],box=$("menuCurrent");$("removeMenuBtn").classList.toggle("hidden",existing.length===0);$("menuButtonText").textContent=pending.length?`Add More Pages (${pending.length} pending)`:"Add Menu Pages";if(!existing.length&&!pending.length){box.innerHTML='<div class="text-sm text-purple-200/45">No menu pages attached yet.</div>';return}let html="";if(existing.length){html+=`<div class="text-xs uppercase tracking-wider text-purple-200/45 font-bold mb-2">Saved menu pages (${existing.length})</div>`;html+=existing.map((f,i)=>`<div class="menu-file"><span>${isPdfMenu(f)?"📄":"🖼️"}</span><span class="min-w-0 flex-1 truncate">${i+1}. ${esc(f.name)}</span><a href="${esc(publicMenuUrl(f.path)||"#")}" target="_blank" rel="noopener noreferrer" class="font-bold text-purple-300 hover:text-white">View</a><button type="button" class="font-bold text-red-300 hover:text-red-200" onclick="removeExistingMenuFile('${encodeURIComponent(f.path)}')">Remove</button></div>`).join("")};if(pending.length){html+=`<div class="text-xs uppercase tracking-wider text-purple-200/45 font-bold ${existing.length?'mt-4':''} mb-2">Pending upload (${pending.length})</div>`;html+=pending.map((f,i)=>`<div class="menu-file"><span>${f.type==="application/pdf"?"📄":"🖼️"}</span><span class="min-w-0 flex-1 truncate">${esc(f.name)}</span><span class="text-xs text-amber-200/70">Pending</span><button type="button" class="font-bold text-red-300 hover:text-red-200" onclick="removePendingMenuFile(${i})">Remove</button></div>`).join("")};box.innerHTML=html}
+  async function loadEditorMenuFiles(restaurantId){try{state.editorMenuFiles=await listMenuFiles(restaurantId);renderMenuEditor()}catch(err){console.error(err);$("menuCurrent").innerHTML='<div class="text-sm text-red-300">Could not load menu pages.</div>'}}
+  function removePendingMenuFile(index){state.pendingMenuFiles.splice(index,1);renderMenuEditor()}
+  async function removeExistingMenuFile(encodedPath){const path=decodeURIComponent(encodedPath),id=$("editId").value;if(!id||!path)return;const file=state.editorMenuFiles.find(f=>f.path===path);if(!confirm(`Remove "${file?.name||"this menu page"}"?\n\nThis only deletes this menu page.`))return;try{await deleteMenu(path);state.editorMenuFiles=await listMenuFiles(id);await syncMenuPointer(id,state.editorMenuFiles);renderMenuEditor();render()}catch(err){$("menuMessage").textContent=err?.message||"Unable to remove menu page.";$("menuMessage").classList.remove("hidden")}}
+  async function uploadMenus(files,restaurantId){if(!supabaseClient||!files?.length)return[];const allowed=["image/jpeg","image/png","image/webp","application/pdf"],uploaded=[];for(const file of files){if(file.size>10*1024*1024)throw new Error(`"${file.name}" is larger than 10 MB.`);if(!allowed.includes(file.type))throw new Error(`"${file.name}" must be PDF, JPG, PNG, or WebP.`)}try{const base=Date.now();for(let i=0;i<files.length;i++){const file=files[i],safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"),path=`${restaurantId}/${base}-${i+1}-${safeName}`;const{error}=await supabaseClient.storage.from("restaurant-menus").upload(path,file,{upsert:false,contentType:file.type});if(error)throw error;uploaded.push({name:file.name,path})}return uploaded}catch(err){if(uploaded.length){try{await supabaseClient.storage.from("restaurant-menus").remove(uploaded.map(x=>x.path))}catch{}}throw err}}
+  async function deleteMenu(path){if(!supabaseClient||!path)return;const{error}=await supabaseClient.storage.from("restaurant-menus").remove([path]);if(error)throw error}
+  async function deleteAllMenusForRestaurant(restaurantId){if(!supabaseClient||!restaurantId)return;const files=await listMenuFiles(restaurantId);if(files.length){const{error}=await supabaseClient.storage.from("restaurant-menus").remove(files.map(f=>f.path));if(error)throw error}}
+  async function openMenuGallery(restaurantId){const item=state.restaurants.find(r=>String(r.id)===String(restaurantId));const restaurantName=item?.name||"Menu";$("menuGalleryTitle").textContent=`${restaurantName} — Menu`;$("menuGallerySubtitle").textContent="Browse all uploaded menu pages.";$("menuGalleryContent").innerHTML='<div class="text-sm text-purple-200/60 text-center py-8">Loading menu pages…</div>';$("menuGalleryModal").classList.remove("hidden");try{let files=await listMenuFiles(restaurantId);if(!files.length){if(item?.menu_file_path)files=[{name:item.menu_file_name||"Menu",path:item.menu_file_path}]}if(!files.length){$("menuGalleryContent").innerHTML='<div class="rounded-2xl border border-purple-300/10 bg-black/20 p-8 text-center"><div class="text-4xl mb-3">📖</div><div class="font-bold">No menu pages found</div></div>';return}$("menuGallerySubtitle").textContent=`${files.length} menu page${files.length===1?"":"s"}`;$("menuGalleryContent").innerHTML=`<div class="menu-grid">${files.map((f,i)=>{const url=publicMenuUrl(f.path)||"#";return `<article class="menu-page-card">${isPdfMenu(f)?`<div class="menu-pdf">📄</div>`:`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"><img class="menu-thumb" loading="lazy" src="${esc(url)}" alt="${esc(restaurantName)} menu page ${i+1}"></a>`}<div class="p-3"><div class="text-xs text-purple-200/45 font-bold">PAGE ${i+1}</div><div class="text-sm font-semibold truncate mt-1">${esc(f.name)}</div><a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary w-full mt-3 text-sm">${isPdfMenu(f)?"Open PDF":"Open Full Size"}</a></div></article>`}).join("")}</div>`}catch(err){console.error(err);$("menuGalleryContent").innerHTML=`<div class="text-sm text-red-300">${esc(err?.message||"Unable to load menu pages.")}</div>`}}
+  function closeMenuGallery(){$("menuGalleryModal").classList.add("hidden")}
+  window.openMenuGallery=openMenuGallery;window.removePendingMenuFile=removePendingMenuFile;window.removeExistingMenuFile=removeExistingMenuFile;
+
+  $("menuFile").addEventListener("change",()=>{const files=[...$("menuFile").files];$("menuMessage").classList.add("hidden");for(const file of files){const key=`${file.name}|${file.size}|${file.lastModified}`;if(!state.pendingMenuFiles.some(f=>`${f.name}|${f.size}|${f.lastModified}`===key))state.pendingMenuFiles.push(file)}$("menuFile").value="";renderMenuEditor()});
+  $("removeMenuBtn").addEventListener("click",async()=>{const id=$("editId").value;if(!id||!state.editorMenuFiles.length)return;if(!confirm(`Remove all ${state.editorMenuFiles.length} menu page${state.editorMenuFiles.length===1?"":"s"}?\n\nThis cannot be undone.`))return;try{await deleteAllMenusForRestaurant(id);state.editorMenuFiles=[];await syncMenuPointer(id,[]);renderMenuEditor();render()}catch(err){$("menuMessage").textContent=err?.message||"Unable to remove menu pages.";$("menuMessage").classList.remove("hidden")}});
+
+  async function loadSortPreference(){const fallback=localStorage.getItem("restaurant_sort_preference")||"rating";if(!supabaseClient){state.sortPreference=fallback;$("sort").value=state.sortPreference;return}const{data,error}=await supabaseClient.from("app_settings").select("sort_preference").eq("id",1).maybeSingle();state.sortPreference=error?fallback:(data?.sort_preference||fallback);$("sort").value=state.sortPreference}
+  async function saveSortPreference(value){state.sortPreference=value;localStorage.setItem("restaurant_sort_preference",value);if(!supabaseClient)return;const{error}=await supabaseClient.from("app_settings").upsert({id:1,sort_preference:value,updated_at:new Date().toISOString()},{onConflict:"id"});if(error)console.warn("Could not save sort preference to Supabase.",error)}
+  function localLoad(){try{const data=JSON.parse(localStorage.getItem("restaurant_tracker_demo")||"[]");state.restaurants=Array.isArray(data)?data:[]}catch{state.restaurants=[]}render()}
+  async function loadExperienceIndex(){const ids=new Set(),counts={};if(!supabaseClient){try{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");Object.entries(all).forEach(([id,experiences])=>{if(Array.isArray(experiences)&&experiences.length){ids.add(String(id));counts[String(id)]=experiences.length}})}catch{}state.experienceRestaurantIds=ids;state.experienceCounts=counts;return}const{data,error}=await supabaseClient.from("restaurant_experiences").select("restaurant_id");if(error){state.experienceRestaurantIds=ids;state.experienceCounts=counts;return}(data||[]).forEach(row=>{if(!row.restaurant_id)return;const id=String(row.restaurant_id);ids.add(id);counts[id]=(counts[id]||0)+1});state.experienceRestaurantIds=ids;state.experienceCounts=counts}
+  async function loadRestaurants(){await loadSortPreference();if(!supabaseClient){localLoad();await loadExperienceIndex();render();return}const{data,error}=await supabaseClient.from("restaurants").select("*").order("created_at",{ascending:false});if(error){console.error(error);$("empty").classList.add("hidden");state.restaurants=[];render();alert("Supabase could not load the restaurants. Check your URL/key and database table.");return}state.restaurants=data||[];await loadExperienceIndex();render()}
+
+  async function saveRestaurant(payload,editId,menuFiles){if(!supabaseClient){if(editId)state.restaurants=state.restaurants.map(r=>String(r.id)===String(editId)?{...r,...payload,updated_at:new Date().toISOString()}:r);else state.restaurants.unshift({id:crypto.randomUUID(),...payload,created_at:new Date().toISOString()});localStorage.setItem("restaurant_tracker_demo",JSON.stringify(state.restaurants));render();return}let result;if(editId)result=await supabaseClient.from("restaurants").update(payload).eq("id",editId).select().single();else result=await supabaseClient.from("restaurants").insert(payload).select().single();if(result.error)throw result.error;const saved=result.data;if(menuFiles?.length){await uploadMenus(menuFiles,saved.id);const allFiles=await listMenuFiles(saved.id);await syncMenuPointer(saved.id,allFiles)}await loadRestaurants()}
+
+  async function deleteRestaurant(rid){const item=state.restaurants.find(r=>String(r.id)===String(rid));if(!item)return;const confirmed=confirm(`Delete "${item.name}"${item.location?` (${item.location})`:""}?\n\nThis will permanently delete the restaurant, all of its Experience/History records, and all attached menu files. This cannot be undone.`);if(!confirmed)return;const button=$("deleteRestaurantBtn");button.disabled=true;button.textContent="Deleting…";try{if(!supabaseClient){state.restaurants=state.restaurants.filter(r=>String(r.id)!==String(rid));try{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");delete all[rid];localStorage.setItem("restaurant_experiences_demo",JSON.stringify(all))}catch{}localStorage.setItem("restaurant_tracker_demo",JSON.stringify(state.restaurants))}else{const experienceDelete=await supabaseClient.from("restaurant_experiences").delete().eq("restaurant_id",rid);if(experienceDelete.error)throw experienceDelete.error;try{await deleteAllMenusForRestaurant(rid)}catch(menuErr){console.warn("Could not delete all menu files from Storage. Continuing with restaurant deletion.",menuErr);if(item.menu_file_path){try{await deleteMenu(item.menu_file_path)}catch{}}}const restaurantDelete=await supabaseClient.from("restaurants").delete().eq("id",rid);if(restaurantDelete.error)throw restaurantDelete.error}state.lastPickedId=String(state.lastPickedId)===String(rid)?null:state.lastPickedId;await loadExperienceIndex();closeModal();await loadRestaurants()}catch(err){console.error(err);alert(err?.message||"Unable to delete restaurant.");button.disabled=false;button.textContent="🗑️ Delete Restaurant"}}
+
+  $("restaurantForm").addEventListener("submit",async e=>{e.preventDefault();const message=$("formMessage");message.classList.add("hidden");const payload={name:$("name").value.trim(),location:$("location").value.trim()||null,google_maps_url:$("googleMapsUrl").value.trim()||null,hours:$("hours").value.trim()||null,card_payment:$("cardPayment").value,pricey:$("pricey").value,parking:$("parking").value,avg_price:$("avgPrice").value.trim()||null,category:$("category").value||null,restaurant_type:$("restaurantType").value||null,my_rating:state.myRating,companion_name:$("companionName").value.trim()||null,partner_rating:$("companionName").value.trim()?state.partnerRating:null,notes:$("notes").value.trim()||null,visited_date:$("visitedDate").value||null,is_favorite:$("favorite").checked,too_far:$("tooFar").checked,within_metro:$("withinMetro").checked,updated_at:new Date().toISOString()};if(!payload.name){message.textContent="Restaurant name is required.";message.classList.remove("hidden");return}if(payload.google_maps_url){try{const parsed=new URL(payload.google_maps_url);if(!["http:","https:"].includes(parsed.protocol))throw new Error()}catch{message.textContent="Please enter a valid Google Maps link.";message.classList.remove("hidden");return}}if(payload.companion_name&&payload.partner_rating==null){message.textContent="Please select a rating for the person/group you went with, or clear the name field.";message.classList.remove("hidden");return}try{await saveRestaurant(payload,$("editId").value||null,[...state.pendingMenuFiles]);closeModal()}catch(err){console.error(err);message.textContent=err?.message||"Unable to save restaurant.";message.classList.remove("hidden")}});
+
+  $("deleteRestaurantBtn").addEventListener("click",async()=>{const id=$("editId").value;if(id)await deleteRestaurant(id)});$("addBtn").addEventListener("click",()=>openModal());$("emptyAdd").addEventListener("click",()=>openModal());$("pickBtn").addEventListener("click",openPicker);$("closePicker").addEventListener("click",closePicker);$("pickRandomBtn").addEventListener("click",pickRestaurant);$("closeModal").addEventListener("click",closeModal);$("cancelBtn").addEventListener("click",closeModal);$("restaurantType").addEventListener("change",updateCategoryForType);
+  $("companionName").addEventListener("input",()=>{const name=$("companionName").value.trim();$("companionRatingSection").classList.toggle("hidden",!name);$("companionRatingTitle").textContent=name?`${name}'s rating`:"Their rating";if(!name){state.partnerRating=null;[...$("partnerRating").children].forEach(b=>b.classList.remove("active"));$("partnerRatingLabel").textContent="Not rated"}});
   $("experienceForm").addEventListener("submit",async e=>{e.preventDefault();const m=$("experienceMessage"),rid=$("experienceRestaurantId").value,eid=$("experienceId").value||null,comp=$("experienceCompanion").value.trim()||null;m.classList.add("hidden");if(state.experienceMyRating==null){m.textContent="Please select your rating.";m.classList.remove("hidden");return}if(comp&&state.experiencePartnerRating==null){m.textContent="Please select the other person's rating, or clear the name field.";m.classList.remove("hidden");return}const payload={restaurant_id:rid,visited_date:$("experienceDate").value||null,companion_name:comp,my_rating:state.experienceMyRating,partner_rating:comp?state.experiencePartnerRating:null,notes:$("experienceNotes").value.trim()||null,updated_at:new Date().toISOString()};try{if(supabaseClient){const q=eid?await supabaseClient.from("restaurant_experiences").update(payload).eq("id",eid):await supabaseClient.from("restaurant_experiences").insert(payload);if(q.error)throw q.error}else{const all=JSON.parse(localStorage.getItem("restaurant_experiences_demo")||"{}");all[rid]=all[rid]||[];if(eid)all[rid]=all[rid].map(x=>String(x.id)===String(eid)?{...x,...payload}:x);else all[rid].push({id:crypto.randomUUID(),...payload});localStorage.setItem("restaurant_experiences_demo",JSON.stringify(all))}await loadExperienceIndex();closeExperienceModal();await viewExperiences(rid);render()}catch(err){m.textContent=err?.message||"Unable to save experience.";m.classList.remove("hidden")}});
-  $("closeExperience").addEventListener("click",closeExperienceModal);$("cancelExperience").addEventListener("click",closeExperienceModal);$("closeExperienceHistory").addEventListener("click",closeExperienceHistory);
-
-  $("filterBtn").addEventListener("click", openFilterModal);
-  $("closeFilter").addEventListener("click", closeFilterModal);
-  $("cancelFilters").addEventListener("click", closeFilterModal);
-  $("applyFilters").addEventListener("click", applyFilters);
-  $("resetFilters").addEventListener("click", resetFilters);
-
-  $("addCategoryOptionBtn").addEventListener("click", () => addCustomOption("category"));
-  $("addTypeOptionBtn").addEventListener("click", () => addCustomOption("type"));
-  $("restaurantType").addEventListener("change", updateCategoryForType);
-
-  $("search").addEventListener("input", render);
-  $("sort").addEventListener("change", async () => {
-    await saveSortPreference($("sort").value);
-    render();
-  });
-
-  refreshCustomOptions();
-  syncFilterControls();
-  loadRestaurants();
+  $("closeExperience").addEventListener("click",closeExperienceModal);$("cancelExperience").addEventListener("click",closeExperienceModal);$("closeExperienceHistory").addEventListener("click",closeExperienceHistory);$("filterBtn").addEventListener("click",openFilterModal);$("closeFilter").addEventListener("click",closeFilterModal);$("cancelFilters").addEventListener("click",closeFilterModal);$("applyFilters").addEventListener("click",applyFilters);$("resetFilters").addEventListener("click",resetFilters);$("addCategoryOptionBtn").addEventListener("click",()=>addCustomOption("category"));$("addTypeOptionBtn").addEventListener("click",()=>addCustomOption("type"));$("search").addEventListener("input",render);$("sort").addEventListener("change",async()=>{await saveSortPreference($("sort").value);render()});$("closeMenuGallery").addEventListener("click",closeMenuGallery);
+  refreshCustomOptions();syncFilterControls();loadRestaurants();
 </script>
 </body>
 </html>
